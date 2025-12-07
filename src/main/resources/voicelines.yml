@@ -1,0 +1,31 @@
+voicelines:
+  idle:
+    - "You're holding me so gently... but I want it rougher."
+    - "Tch... still keeping me waiting? I could explode if you're not careful."
+    - "Swing me already. I'm aching for some action, dummy."
+    - "You're teasing me, aren't you? Keeping me so close... yet doing nothing."
+    - "You wouldn't like me when I get... impatient."
+  nearing-expiry:
+    - "You're starving me... you like making me beg, don't you?"
+    - "If you don't use me soon, I'll have to... take matters into my own hands."
+    - "You're such a tease. I bet you want to see me lose control."
+    - "I-I'm trembling... I need to be satisfied."
+  combat:
+    - "Ahh~ Yes! That's how you handle me."
+    - "Mmm, harder! Don't hold back on me now."
+    - "You're making me feel things I haven't felt in centuries."
+    - "One more... just one more thrust—I need it."
+    - "I knew you had it in you... I just had to push the right buttons."
+  breakup:
+    - "I waited… and waited… but you never listened."
+    - "I guess I wasn’t enough for you after all."
+    - "You’ve made your choice. I won’t beg anymore."
+    - "I’m done chasing after someone who won’t even swing me."
+    - "Maybe someone else will know how to handle me properly."
+    - "You used to be fun… now you’re just a disappointment."
+    - "Goodbye. Don’t bother looking for me when you realize what you lost."
+    - "You’ll miss me. They always do."
+  last-chance:
+    - "This is your last chance... don't waste it."
+    - "Lose me again and I'm gone for good."
+    - "You've pushed me to the edge—prove you deserve me."

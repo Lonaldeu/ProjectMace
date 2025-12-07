@@ -1,0 +1,3 @@
+// Root settings.gradle for ProjectMace
+
+rootProject.name = 'ProjectMace'

@@ -1,0 +1,46 @@
+name: ProjectMace
+version: 0.1.0
+main: me.lonaldeu.projectmace.ProjectMacePlugin
+api-version: '1.21'
+folia-supported: true
+
+description: Legendary mace gameplay for Folia/Paper servers
+author: Lonaldeu
+
+# Soft dependencies (optional)
+softdepend:
+  - MiniPlaceholders
+
+permissions:
+  mace.*:
+    description: Grants all mace command permissions
+    default: op
+    children:
+      mace.help: true
+      mace.unclaim: true
+      mace.search: true
+      mace.transfer: true
+      mace.timer: true
+      mace.bloodtimer: true
+      mace.refund: true
+  mace.help:
+    description: View mace command help
+    default: op
+  mace.unclaim:
+    description: Force unclaim a legendary mace
+    default: op
+  mace.search:
+    description: Scan the server for legendary or illegal maces
+    default: op
+  mace.transfer:
+    description: Transfer maces between players
+    default: op
+  mace.timer:
+    description: View bloodthirst timers
+    default: op
+  mace.bloodtimer:
+    description: Adjust bloodthirst timers
+    default: op
+  mace.refund:
+    description: Refund crafting materials
+    default: op

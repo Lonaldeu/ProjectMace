@@ -1,0 +1,221 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#
+#    ██████╗ ██████╗  ██████╗      ██╗███████╗ ██████╗████████╗
+#    ██╔══██╗██╔══██╗██╔═══██╗     ██║██╔════╝██╔════╝╚══██╔══╝
+#    ██████╔╝██████╔╝██║   ██║     ██║█████╗  ██║        ██║   
+#    ██╔═══╝ ██╔══██╗██║   ██║██   ██║██╔══╝  ██║        ██║   
+#    ██║     ██║  ██║╚██████╔╝╚█████╔╝███████╗╚██████╗   ██║   
+#    ╚═╝     ╚═╝  ╚═╝ ╚═════╝  ╚════╝ ╚══════╝ ╚═════╝   ╚═╝   
+#
+#    ███╗   ███╗ █████╗  ██████╗███████╗
+#    ████╗ ████║██╔══██╗██╔════╝██╔════╝
+#    ██╔████╔██║███████║██║     █████╗  
+#    ██║╚██╔╝██║██╔══██║██║     ██╔══╝  
+#    ██║ ╚═╝ ██║██║  ██║╚██████╗███████╗
+#    ╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝╚══════╝
+#
+#                      ProjectMace Configuration
+# ═══════════════════════════════════════════════════════════════════════════
+# A legendary mace plugin with bloodthirst mechanics and combat tracking
+# Reload config: /mace reload (requires permission)
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                          CORE SETTINGS                                  │
+# └─────────────────────────────────────────────────────────────────────────┘
+
+# Storage type for mace data: "yaml" or "sqlite"
+# - yaml: Simple file storage, good for small servers (<50 maces)
+# - sqlite: Database storage, recommended for unlimited maces (max-legendary-maces: 0)
+# NOTE: SQLite driver is downloaded automatically on first use (~7MB)
+# Existing data is migrated automatically when switching storage types
+storage: sqlite
+
+# Enable debug mode for verbose logging
+debug: false
+
+# Maximum legendary maces allowed on server simultaneously
+# Set to 0 for unlimited (every player can create one)
+max-legendary-maces: 3
+
+# Auto-save interval in seconds (default: 300 = 5 minutes)
+# Set to 0 to disable periodic saves
+auto-save-interval: 300
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                        BLOODTHIRST TIMER                                │
+# └─────────────────────────────────────────────────────────────────────────┘
+# Duration in hours before mace abandons wielder without worthy kill
+# Set to 0 to disable combat/timer (permanent mace mode)
+# WARNING: Lower values make the mace harder to keep!
+bloodthirst-duration-hours: 24
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                         CRAFTING SYSTEM                                 │
+# └─────────────────────────────────────────────────────────────────────────┘
+crafting:
+  enabled: true                 # Master toggle for mace crafting
+  cooldown-seconds: 3.0         # Cooldown after each craft attempt
+  durability: 500               # Starting durability (vanilla mace max: 500)
+  max-per-player: 1             # Max maces a player can own (0 = unlimited)
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                       ENCHANTMENT SYSTEM                                │
+# └─────────────────────────────────────────────────────────────────────────┘
+enchanting:
+  # Where enchantments can be applied
+  anvil: true                   # Allow enchanting via anvil
+  enchanting-table: true        # Allow enchanting via enchanting table
+  
+  # Whitelist of allowed enchantments (empty = all vanilla mace enchants allowed)
+  # Set to specific enchants to restrict, e.g.: [unbreaking, mending, sharpness]
+  # Use Minecraft enchantment names (lowercase, underscores)
+  allowed-enchantments:
+    - unbreaking
+    - mending
+    - sharpness
+    - smite
+    - bane_of_arthropods
+    - fire_aspect
+    - looting
+    - knockback
+    - sweeping_edge
+    - density
+    - breach
+    - wind_burst
+    - curse_of_vanishing
+  
+  # Blacklist (overrides whitelist - these are NEVER allowed)
+  # Example: [curse_of_vanishing] to prevent losing mace on death
+  blocked-enchantments: []
+  
+  # Max enchantment levels (optional overrides)
+  # Example: { unbreaking: 5, sharpness: 10 }
+  max-levels: {}
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                       COMBAT & SCORING                                  │
+# └─────────────────────────────────────────────────────────────────────────┘
+# NOTE: Automatically disabled if bloodthirst-duration-hours is 0
+features:
+  combat:
+    enabled: true               # Master toggle for combat tracking
+    track-damage: true          # Track damage dealt/received
+    award-worthy-kills: true    # Grant timer extensions for worthy kills
+    send-messages: true         # Send combat feedback messages
+    send-voicelines: true       # Send atmospheric voicelines
+    
+    # Combat scoring thresholds (tune difficulty here)
+    scoring:
+      base-damage: 5.0              # Base damage requirement
+      damage-multiplier: 1.0        # Damage dealt weight
+      health-multiplier: 0.5        # Victim health weight
+      armor-multiplier: 2.0         # Victim armor weight
+      totem-bonus: 20.0             # Bonus for totem pops
+      worthy-kill-threshold: 10.0   # Score needed for worthy kill
+      easy-kill-threshold: 5.0      # Score below this = easy kill
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                      INVENTORY PROTECTION                               │
+# └─────────────────────────────────────────────────────────────────────────┘
+  inventory-guard:
+    enabled: true
+    block-decorated-pots: true      # Prevent placing in decorated pots
+    block-item-frames: true         # Prevent placing in item frames
+    block-armor-stands: true        # Prevent equipping on armor stands
+    block-allays: true              # Prevent giving to allays
+    block-drop-on-death: false      # Keep mace in inventory on death
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                      PLACEHOLDERS (MiniPlaceholders)                    │
+# └─────────────────────────────────────────────────────────────────────────┘
+  placeholders:
+    enabled: true
+    format:
+      empty-value: "None"
+      boolean-true: "true"
+      boolean-false: "false"
+      list-separator: ", "
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                         BACKGROUND TASKS                                │
+# └─────────────────────────────────────────────────────────────────────────┘
+  background-tasks:
+    enabled: true               # Master toggle for background processing
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                        TIMER THRESHOLDS                                 │
+# └─────────────────────────────────────────────────────────────────────────┘
+# NOTE: Ignored if bloodthirst-duration-hours is 0
+timers:
+  warning-threshold: 300        # 5 min - triggers warning state
+  critical-threshold: 60        # 1 min - triggers critical state
+  last-chance-threshold: 60     # 1 min - triggers last chance voiceline
+  idle-whisper-interval: 150    # 2.5 min between idle whispers
+  status-check-interval: 10     # 10 sec between status checks
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                     VISUAL & AUDIO EFFECTS                              │
+# └─────────────────────────────────────────────────────────────────────────┘
+# NOTE: Timer-based effects disabled if bloodthirst-duration-hours is 0
+effects:
+  wielder:
+    particles:
+      enabled: true
+      interval-seconds: 1       # Spawn interval
+      count: 10                 # Particles per spawn
+      # Particle types by remaining time:
+      # >50%: CRIMSON_SPORE | >10%: SOUL_FIRE_FLAME | <10%: LAVA
+    
+    sounds:
+      enabled: true
+      heartbeat-enabled: true
+      heartbeat-threshold: 60   # Play heartbeat when <60s remain
+      volume: 0.5
+      pitch-min: 0.5            # Pitch increases as time runs out
+      pitch-max: 1.5
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                      LOOSE MACE (Dropped)                               │
+# └─────────────────────────────────────────────────────────────────────────┘
+loose-mace:
+  despawn-delay-seconds: 600    # 10 min before auto-despawn
+  void-recovery-enabled: true   # Recover maces from void
+  announcement-enabled: true    # Broadcast when maces are lost
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                      HOLD TIME ESCALATION                               │
+# └─────────────────────────────────────────────────────────────────────────┘
+# NOTE: Ignored if bloodthirst-duration-hours is 0
+hold-time:
+  base-damage-requirement: 10.0   # Base damage for worthy kill
+  escalation-rate: 0.5            # +0.5 damage per minute held
+  tracking-enabled: true          # Track total hold time
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                        ANNOUNCEMENTS                                    │
+# └─────────────────────────────────────────────────────────────────────────┘
+announcements:
+  cooldown-milliseconds: 2000       # Min time between broadcasts
+  mace-lost-enabled: true           # Announce lost maces
+  bloodthirst-unmet-enabled: true   # Announce timer expirations
+  divine-intervention-enabled: true # Announce admin actions
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                         PERFORMANCE                                     │
+# └─────────────────────────────────────────────────────────────────────────┘
+performance:
+  combat-log-max-history: 1000      # Max combat events in memory
+  combat-log-pruning-interval: 60   # Seconds between cleanup
+  chunk-force-load: true            # Keep chunks with loose maces loaded
+  chunk-unload-delay: 5             # Seconds before chunk unload
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                           LOGGING                                       │
+# └─────────────────────────────────────────────────────────────────────────┘
+logging:
+  verbose-events: false             # Detailed event logging
+  log-directory: "mace_logs"        # Log file directory
+  include-location-data: true       # Log coordinates
+  include-timer-data: true          # Log timer info
+

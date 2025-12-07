@@ -1,0 +1,60 @@
+inventory:
+  decorated-pot: "&cThe Legendary Mace refuses to be stowed in a decorated pot."
+  item-frame: "&cThe Legendary Mace refuses to be mounted."
+  armor-stand: "&cThe Legendary Mace refuses to be placed on a stand."
+  allay: "&cThe Legendary Mace refuses to be entrusted to an Allay."
+  restricted-inventory: "&cThe Legendary Mace refuses to be stowed in that inventory."
+  cannot-open: "&cYou cannot open that while carrying the Legendary Mace."
+  refuses-drop: "&cThe Legendary Mace refuses to leave your grasp."
+  resists-stow: "&cThe Legendary Mace resists being stowed away."
+
+lifecycle:
+  abandoned-personal: "&cThe Legendary Mace has abandoned you."
+  breakup-format: "&5&o<line>"
+
+combat:
+  kill-weak: "&cThat kill was too weak. The mace remains unimpressed. (&e<score>&c)"
+  kill-satisfied: "&6The mace purrs with satisfaction. (&a<score>&6)"
+  kill-easy: "&cThat kill was too easy. The mace remains hungry. (&e<score>&c)"
+  voiceline-format: "&d&o<line>"
+
+announcements:
+  mace-lost: |
+    <dark_gray><bold>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</bold>
+    <red><bold>MACE LOST</bold> <gray>»</gray> <dark_gray>The relic fades, unclaimed and unsated.
+    <gray>Location last known: <yellow><x></yellow>, <yellow><y></yellow>, <yellow><z></yellow> (<world>)
+    <dark_gray><bold>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</bold>
+  bloodthirst-unmet: |
+    <dark_gray><bold>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</bold>
+    <red><bold>BLOODTHIRST UNMET</bold> <gray>»</gray> <dark_gray><wielder> failed to satisfy the Mace.
+    <gray>Reason: <white><reason></white>
+    <dark_gray><bold>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</bold>
+  divine-intervention-all: |
+    <dark_gray><bold>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</bold>
+    <yellow><bold>DIVINE INTERVENTION</bold> <gray>»</gray> <dark_gray>An unseen force has reset the balance.
+    <gray>Status: <white>All legendary Maces have been unbound from their wielders.
+    <gray>Outcome: <white>The path to forging new Maces is now clear.
+    <dark_gray><bold>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</bold>
+  divine-intervention-single: |
+    <dark_gray><bold>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</bold>
+    <yellow><bold>DIVINE INTERVENTION</bold> <gray>»</gray> <dark_gray>An unseen force has reclaimed a relic.
+    <gray>Former Wielder: <yellow><wielder></yellow>
+    <gray>Status: <white>A legendary Mace has been unbound from its wielder.
+    <gray>Outcome: <white>The path to forging a new Mace may now be clear.
+    <dark_gray><bold>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</bold>
+  relic-forged: |
+    <dark_gray><bold>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</bold>
+    <gold><bold>RELIC FORGED</bold> <gray>»</gray> <dark_gray>The forge roars to life as a new legend is born.
+    <gray>Wielder: <yellow><wielder></yellow>
+    <gray>Objective: <white>Quench the Mace's <red>Bloodthirst</red><gray> within 24 hours.
+    <dark_gray><bold>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</bold>
+  mace-loosened: |
+    <dark_gray><bold>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</bold>
+    <gold><bold>MACE LOOSENED</bold> <gray>»</gray> <dark_gray><player> has fallen. The relic awaits a new wielder.
+    <dark_gray><bold>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</bold>
+  void-recovery: "<gray>The Legendary Mace refuses the void and reforms at spawn."
+  mace-abandoned: |
+    <dark_gray><bold>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</bold>
+    <red><bold>MACE ABANDONED</bold> <gray>»</gray> <dark_gray><wielder> has failed to satisfy the Mace's bloodlust.
+    <gray>The relic has been stripped away. The path to forging a new Mace is now clear.
+    <dark_gray><bold>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</bold>
