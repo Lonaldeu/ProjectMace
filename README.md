@@ -49,7 +49,9 @@ ProjectMace transforms the vanilla mace into a **legendary server-wide treasure*
 <td width="50%">
 
 ### 🔌 Integration
-- 40+ MiniPlaceholders
+- PlaceholderAPI support (priority)
+- MiniPlaceholders support
+- 40+ placeholders available
 - Full developer API
 - YAML or SQLite storage
 - Hot-reloadable config
@@ -78,7 +80,10 @@ ProjectMace transforms the vanilla mace into a **legendary server-wide treasure*
 | Java | 21+ |
 
 ### Optional
-- [MiniPlaceholders](https://modrinth.com/plugin/miniplaceholders) — Scoreboard & TAB placeholders
+- [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) — Standard placeholder support (priority)
+- [MiniPlaceholders](https://modrinth.com/plugin/miniplaceholders) — MiniMessage-based placeholders
+
+> **Note:** If both are installed, both will work. PlaceholderAPI is checked first.
 
 <br>
 
@@ -165,20 +170,25 @@ features:
 
 ## 🏷️ Placeholders
 
-> Requires [MiniPlaceholders](https://modrinth.com/plugin/miniplaceholders)
+Supports both **PlaceholderAPI** and **MiniPlaceholders**. If both plugins are installed, both will work simultaneously.
+
+| Plugin | Format | Example |
+|--------|--------|--------|
+| PlaceholderAPI | `%projectmace_<name>%` | `%projectmace_timer_seconds%` |
+| MiniPlaceholders | `<projectmace_<name>>` | `<projectmace_timer_seconds>` |
 
 <details>
 <summary><strong>🌐 Global Placeholders</strong></summary>
 
 | Placeholder | Output |
 |-------------|--------|
-| `<projectmace_active_wielder_count>` | `3` |
-| `<projectmace_total_mace_count>` | `5` |
-| `<projectmace_max_mace_count>` | `10` |
-| `<projectmace_available_mace_slots>` | `5` |
-| `<projectmace_wielder_names>` | `Steve, Alex` |
-| `<projectmace_loose_mace_count>` | `2` |
-| `<projectmace_has_available_mace_slot>` | `true` |
+| `projectmace_active_wielder_count` | `3` |
+| `projectmace_total_mace_count` | `5` |
+| `projectmace_max_mace_count` | `10` |
+| `projectmace_available_mace_slots` | `5` |
+| `projectmace_wielder_names` | `Steve, Alex` |
+| `projectmace_loose_mace_count` | `2` |
+| `projectmace_has_available_mace_slot` | `true` |
 
 </details>
 
@@ -187,13 +197,13 @@ features:
 
 | Placeholder | Output |
 |-------------|--------|
-| `<projectmace_timer_seconds>` | `3600` |
-| `<projectmace_timer_formatted>` | `01:00:00` |
-| `<projectmace_timer_short>` | `1h 0m` |
-| `<projectmace_timer_percent>` | `50.00` |
-| `<projectmace_timer_state>` | `active` / `warning` / `critical` |
-| `<projectmace_is_wielder>` | `true` |
-| `<projectmace_last_kill_name>` | `Notch` |
+| `projectmace_timer_seconds` | `3600` |
+| `projectmace_timer_formatted` | `01:00:00` |
+| `projectmace_timer_short` | `1h 0m` |
+| `projectmace_timer_percent` | `50.00` |
+| `projectmace_timer_state` | `active` / `warning` / `critical` |
+| `projectmace_is_wielder` | `true` |
+| `projectmace_last_kill_name` | `Notch` |
 
 </details>
 
@@ -229,7 +239,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("com.github.lonaldeu:ProjectMace:0.1.0")
+    compileOnly("com.github.lonaldeu:ProjectMace:0.1.1")
 }
 ```
 

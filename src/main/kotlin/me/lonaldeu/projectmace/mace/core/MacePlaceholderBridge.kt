@@ -159,35 +159,40 @@ class MacePlaceholderBridge(
     }
 
     /**
-     * Registers PlaceholderAPI expansion using reflection.
+     * Registers PlaceholderAPI expansion.
+     * The expansion class is in a separate file to isolate the PAPI dependency.
+     * 
+     * With Paper's new plugin loader in paper-plugin.yml,
+     * our classloader can see PlaceholderAPI's classes directly.
      */
     private fun registerPlaceholderApi(placeholderApi: org.bukkit.plugin.Plugin) {
         val api = maceManager.getApi()
         val state = api.state
 
-        runCatching {
+        try {
             // Unregister if already registered
             unregisterPlaceholderApiIfRegistered()
 
-            val expansion = ProjectMacePapiExpansion(
-                plugin = plugin,
-                identifier = EXPANSION_NAME,
-                author = plugin.pluginMeta.authors.joinToString(", ").ifBlank { plugin.name },
-                version = plugin.pluginMeta.version,
-                onRequest = { player, params -> handlePlaceholderRequest(player, params, state) }
+            // Create the expansion directly - classloader visibility is handled by paper-plugin.yml
+            val expansion = me.lonaldeu.projectmace.mace.core.papi.ProjectMacePapiExpansion(
+                expansionIdentifier = EXPANSION_NAME,
+                expansionAuthor = plugin.pluginMeta.authors.joinToString(", ").ifBlank { plugin.name },
+                expansionVersion = plugin.pluginMeta.version,
+                requestHandler = { player, params -> handlePlaceholderRequest(player, params, state) }
             )
 
             val registered = expansion.register()
             if (registered) {
                 registeredPlaceholderApiExpansion = expansion
                 placeholderApiRegistered = true
-                plugin.logger.info("[Mace] PlaceholderAPI expansion registered (%${EXPANSION_NAME}_...%)")
-            } else {
-                plugin.logger.warning("[Mace] PlaceholderAPI expansion registration returned false")
+                plugin.logger.info("PlaceholderAPI expansion registered")
             }
-        }.onFailure { error ->
-            plugin.logger.warning("Failed to register PlaceholderAPI expansion: ${error.message}")
-            plugin.logger.fine(error.stackTraceToString())
+        } catch (e: NoClassDefFoundError) {
+            plugin.logger.warning("Failed to register PlaceholderAPI expansion: PlaceholderAPI classes not found - ${e.message}")
+            plugin.logger.fine(e.stackTraceToString())
+        } catch (e: Exception) {
+            plugin.logger.warning("Failed to register PlaceholderAPI expansion: ${e.message}")
+            e.printStackTrace()
         }
     }
 
@@ -195,9 +200,11 @@ class MacePlaceholderBridge(
      * Unregisters PlaceholderAPI expansion if previously registered.
      */
     private fun unregisterPlaceholderApiIfRegistered() {
-        val expansion = registeredPlaceholderApiExpansion as? me.clip.placeholderapi.expansion.PlaceholderExpansion
-        if (expansion != null && expansion.isRegistered) {
-            expansion.unregister()
+        val expansion = registeredPlaceholderApiExpansion as? me.lonaldeu.projectmace.mace.core.papi.ProjectMacePapiExpansion
+        if (expansion != null) {
+            try {
+                expansion.unregister()
+            } catch (e: Exception) { /* ignore */ }
             registeredPlaceholderApiExpansion = null
             placeholderApiRegistered = false
         }
@@ -333,7 +340,7 @@ class MacePlaceholderBridge(
             reflection.register(expansion)
             registeredMiniPlaceholdersExpansion = expansion
             miniPlaceholdersRegistered = true
-            plugin.logger.info("[Mace] MiniPlaceholders expansion registered (<${EXPANSION_NAME}_...>)")
+            plugin.logger.info("MiniPlaceholders expansion registered")
         }.onFailure { error ->
             plugin.logger.warning("Failed to register MiniPlaceholders expansion: ${error.message}")
             plugin.logger.fine(error.stackTraceToString())
@@ -1123,33 +1130,6 @@ class MacePlaceholderBridge(
                     registeredMethod = registeredMethod
                 )
             }
-        }
-    }
-
-    /**
-     * Internal PlaceholderExpansion implementation for PlaceholderAPI.
-     *
-     * This is an internal expansion that delegates placeholder handling to the bridge.
-     * It extends PlaceholderExpansion directly since we have the compile-time dependency.
-     */
-    private class ProjectMacePapiExpansion(
-        private val plugin: Plugin,
-        private val identifier: String,
-        private val author: String,
-        private val version: String,
-        private val onRequest: (OfflinePlayer?, String) -> String?
-    ) : me.clip.placeholderapi.expansion.PlaceholderExpansion() {
-
-        override fun getIdentifier(): String = identifier
-
-        override fun getAuthor(): String = author
-
-        override fun getVersion(): String = version
-
-        override fun persist(): Boolean = true
-
-        override fun onRequest(player: OfflinePlayer?, params: String): String? {
-            return onRequest.invoke(player, params)
         }
     }
 

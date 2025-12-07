@@ -1,5 +1,5 @@
 name: ProjectMace
-version: 0.1.0
+version: 0.1.1
 main: me.lonaldeu.projectmace.ProjectMacePlugin
 api-version: '1.21'
 folia-supported: true
@@ -7,11 +7,15 @@ folia-supported: true
 description: Legendary mace gameplay for Folia/Paper servers
 author: Lonaldeu
 
-# Soft dependencies (optional)
-# PlaceholderAPI takes priority over MiniPlaceholders if both are present
-softdepend:
-  - PlaceholderAPI
-  - MiniPlaceholders
+# Dependencies with Paper's new plugin loader
+dependencies:
+  server:
+    PlaceholderAPI:
+      load: BEFORE
+      required: false
+    MiniPlaceholders:
+      load: BEFORE
+      required: false
 
 permissions:
   mace.*:
