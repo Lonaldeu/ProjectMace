@@ -8,7 +8,9 @@ description: Legendary mace gameplay for Folia/Paper servers
 author: Lonaldeu
 
 # Soft dependencies (optional)
+# PlaceholderAPI takes priority over MiniPlaceholders if both are present
 softdepend:
+  - PlaceholderAPI
   - MiniPlaceholders
 
 permissions:

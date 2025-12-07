@@ -17,20 +17,29 @@ import net.kyori.adventure.text.minimessage.tag.Tag
 import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.Bukkit
+import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 
 /**
- * MiniPlaceholders bridge. Registers a reflection-backed expansion only when
- * the host server has MiniPlaceholders installed. We avoid compile-time
- * references to keep the dependency optional (soft dependency).
+ * Unified placeholder bridge for both PlaceholderAPI and MiniPlaceholders.
+ *
+ * **Priority**: PlaceholderAPI is checked first. If PlaceholderAPI is not available,
+ * falls back to MiniPlaceholders. Both can be registered simultaneously if desired,
+ * but PlaceholderAPI takes priority for detection/availability checks.
  *
  * ## Integration Details
  *
  * The integration uses **reflection** to avoid compile-time dependencies:
- * - Loads MiniPlaceholders classes dynamically via [ClassLoader]
+ * - Loads PlaceholderAPI/MiniPlaceholders classes dynamically via [ClassLoader]
  * - Creates proxy objects for resolver interfaces
  * - Registers placeholders without direct API imports
+ *
+ * ## PlaceholderAPI Format
+ * - Uses `%projectmace_<placeholder>%` format
+ *
+ * ## MiniPlaceholders Format
+ * - Uses `<projectmace_<placeholder>>` format
  *
  * ## Global Placeholders (Server-wide)
  *
@@ -101,35 +110,216 @@ class MacePlaceholderBridge(
     private val criticalThresholdSeconds: Double
 ) {
 
-    private var registeredExpansion: Any? = null
+    private var registeredMiniPlaceholdersExpansion: Any? = null
+    private var registeredPlaceholderApiExpansion: Any? = null
+    private var placeholderApiRegistered = false
+    private var miniPlaceholdersRegistered = false
 
     /**
-     * Registers MiniPlaceholders expansion if MiniPlaceholders plugin is detected and enabled.
+     * Registers placeholder expansions for available placeholder plugins.
+     *
+     * ## Priority Order
+     * 1. PlaceholderAPI (if available) - checked and registered first
+     * 2. MiniPlaceholders (if available) - registered as fallback/additional support
+     *
+     * Both can be registered simultaneously if both plugins are present,
+     * allowing maximum compatibility with different plugins that use either system.
      *
      * ## Behavior
-     * - Detects MiniPlaceholders via [PluginManager.getPlugin]
-     * - Returns silently if MiniPlaceholders is not found or disabled
-     * - Unregisters previously registered expansion if exists
-     * - Creates expansion builder and registers all placeholders
-     * - Caches reflection metadata per [ClassLoader]
+     * - Checks PlaceholderAPI first via [PluginManager.getPlugin]
+     * - Then checks MiniPlaceholders via [PluginManager.getPlugin]
+     * - Returns silently if neither is found
+     * - Unregisters previously registered expansions if exists
      *
-     * @see registerGlobalPlaceholders
-     * @see registerAudiencePlaceholders
+     * @see registerPlaceholderApi
+     * @see registerMiniPlaceholders
      */
     fun registerPlaceholders() {
         val pluginManager = plugin.server.pluginManager
-        val miniPlaceholders = pluginManager.getPlugin("MiniPlaceholders")
-
-        if (miniPlaceholders == null || !miniPlaceholders.isEnabled) {
-            plugin.logger.fine("[Mace] MiniPlaceholders not detected; skipping placeholder registration")
-            return
+        
+        // Try PlaceholderAPI first (priority)
+        val placeholderApi = pluginManager.getPlugin("PlaceholderAPI")
+        if (placeholderApi != null && placeholderApi.isEnabled) {
+            registerPlaceholderApi(placeholderApi)
+        } else {
+            plugin.logger.fine("[Mace] PlaceholderAPI not detected")
         }
+        
+        // Also try MiniPlaceholders (can work alongside PAPI)
+        val miniPlaceholders = pluginManager.getPlugin("MiniPlaceholders")
+        if (miniPlaceholders != null && miniPlaceholders.isEnabled) {
+            registerMiniPlaceholders(miniPlaceholders)
+        } else {
+            plugin.logger.fine("[Mace] MiniPlaceholders not detected")
+        }
+        
+        if (!placeholderApiRegistered && !miniPlaceholdersRegistered) {
+            plugin.logger.fine("[Mace] No placeholder plugins detected; skipping placeholder registration")
+        }
+    }
 
+    /**
+     * Registers PlaceholderAPI expansion using reflection.
+     */
+    private fun registerPlaceholderApi(placeholderApi: org.bukkit.plugin.Plugin) {
+        val api = maceManager.getApi()
+        val state = api.state
+
+        runCatching {
+            // Unregister if already registered
+            unregisterPlaceholderApiIfRegistered()
+
+            val expansion = ProjectMacePapiExpansion(
+                plugin = plugin,
+                identifier = EXPANSION_NAME,
+                author = plugin.pluginMeta.authors.joinToString(", ").ifBlank { plugin.name },
+                version = plugin.pluginMeta.version,
+                onRequest = { player, params -> handlePlaceholderRequest(player, params, state) }
+            )
+
+            val registered = expansion.register()
+            if (registered) {
+                registeredPlaceholderApiExpansion = expansion
+                placeholderApiRegistered = true
+                plugin.logger.info("[Mace] PlaceholderAPI expansion registered (%${EXPANSION_NAME}_...%)")
+            } else {
+                plugin.logger.warning("[Mace] PlaceholderAPI expansion registration returned false")
+            }
+        }.onFailure { error ->
+            plugin.logger.warning("Failed to register PlaceholderAPI expansion: ${error.message}")
+            plugin.logger.fine(error.stackTraceToString())
+        }
+    }
+
+    /**
+     * Unregisters PlaceholderAPI expansion if previously registered.
+     */
+    private fun unregisterPlaceholderApiIfRegistered() {
+        val expansion = registeredPlaceholderApiExpansion as? me.clip.placeholderapi.expansion.PlaceholderExpansion
+        if (expansion != null && expansion.isRegistered) {
+            expansion.unregister()
+            registeredPlaceholderApiExpansion = null
+            placeholderApiRegistered = false
+        }
+    }
+
+    /**
+     * Handles placeholder requests for PlaceholderAPI.
+     * Returns the placeholder value as a String, or null if unknown.
+     */
+    private fun handlePlaceholderRequest(
+        player: OfflinePlayer?,
+        params: String,
+        state: me.lonaldeu.projectmace.mace.api.LegendaryMaceStateView
+    ): String? {
+        return when (params.lowercase()) {
+            // === Global Placeholders ===
+            "active_wielder_count" -> state.getActiveWielders().size.toString()
+            "total_mace_count" -> state.maceCount().toString()
+            "max_mace_count" -> state.getMaxLegendaryMaces().toString()
+            "available_mace_slots" -> (state.getMaxLegendaryMaces() - state.maceCount()).coerceAtLeast(0).toString()
+            "has_available_mace_slot" -> boolText(state.maceCount() < state.getMaxLegendaryMaces())
+            
+            "wielder_names" -> formatList(state.getActiveWielders().map { lookupPlayerName(it.playerUuid) })
+            "wielder_uuids" -> formatList(state.getActiveWielders().map { it.playerUuid.toString() })
+            
+            "wielder_timer_seconds_list" -> {
+                val now = nowSeconds()
+                formatList(state.getActiveWielders().map { wielder ->
+                    "${lookupPlayerName(wielder.playerUuid)}:${formatNumeric(remainingSeconds(wielder, now))}"
+                })
+            }
+            "wielder_timer_formatted_list" -> {
+                val now = nowSeconds()
+                formatList(state.getActiveWielders().map { wielder ->
+                    "${lookupPlayerName(wielder.playerUuid)}:${formatDuration(remainingSeconds(wielder, now))}"
+                })
+            }
+            "wielder_last_kill_names" -> {
+                formatList(state.getActiveWielders().map { wielder ->
+                    "${lookupPlayerName(wielder.playerUuid)}:${lookupPlayerName(wielder.lastKillUuid)}"
+                })
+            }
+            
+            "loose_mace_count" -> state.getLooseMaces().size.toString()
+            "loose_mace_locations" -> formatList(state.getLooseMaces().map { formatLooseMaceLocation(it) })
+            "loose_mace_details" -> {
+                val now = nowSeconds()
+                formatList(state.getLooseMaces().map { formatLooseMaceDetail(it, now) })
+            }
+            "loose_mace_world_counts" -> {
+                formatList(state.getLooseMaces()
+                    .groupBy { it.location.world?.name ?: "unknown" }
+                    .toSortedMap(String.CASE_INSENSITIVE_ORDER)
+                    .map { (world, entries) -> "$world:${entries.size}" })
+            }
+            "loose_mace_owner_names" -> formatList(state.getLooseMaces().mapNotNull { it.originalOwnerUuid }.map { lookupPlayerName(it) })
+            "loose_mace_next_despawn_seconds" -> formatNumeric(nextDespawnSeconds(state.getLooseMaces()))
+            "loose_mace_next_despawn_formatted" -> formatDuration(nextDespawnSeconds(state.getLooseMaces()))
+            "loose_mace_latest_despawn_seconds" -> formatNumeric(latestDespawnSeconds(state.getLooseMaces()))
+            "loose_mace_latest_despawn_formatted" -> formatDuration(latestDespawnSeconds(state.getLooseMaces()))
+
+            // === Per-Player Placeholders ===
+            "timer_seconds" -> formatNumeric(player?.uniqueId?.let { state.getRemainingBloodthirstSeconds(it) })
+            "timer_formatted" -> formatDuration(player?.uniqueId?.let { state.getRemainingBloodthirstSeconds(it) })
+            "timer_short" -> formatShortDuration(player?.uniqueId?.let { state.getRemainingBloodthirstSeconds(it) })
+            "timer_minutes" -> {
+                val seconds = player?.uniqueId?.let { state.getRemainingBloodthirstSeconds(it) }
+                formatNumeric(seconds?.div(60.0)?.coerceAtLeast(0.0) ?: 0.0)
+            }
+            "timer_hours" -> {
+                val seconds = player?.uniqueId?.let { state.getRemainingBloodthirstSeconds(it) }
+                formatNumeric(seconds?.div(3600.0)?.coerceAtLeast(0.0) ?: 0.0)
+            }
+            "timer_percent" -> {
+                val seconds = player?.uniqueId?.let { state.getRemainingBloodthirstSeconds(it) }
+                "%.2f".format(Locale.US, if (seconds != null) (seconds / bloodthirstDurationSeconds()) * 100.0 else 0.0)
+            }
+            "timer_state" -> resolveTimerState(player?.uniqueId?.let { state.getRemainingBloodthirstSeconds(it) })
+            "is_wielder" -> boolText(player?.uniqueId?.let { state.findWielder(it) != null } ?: false)
+            "has_timer" -> boolText(player?.uniqueId?.let { state.getRemainingBloodthirstSeconds(it) != null } ?: false)
+            "is_timer_warning" -> {
+                val seconds = player?.uniqueId?.let { state.getRemainingBloodthirstSeconds(it) }
+                boolText(seconds != null && seconds > 0 && seconds <= warningThresholdSeconds)
+            }
+            "is_timer_critical" -> {
+                val seconds = player?.uniqueId?.let { state.getRemainingBloodthirstSeconds(it) }
+                boolText(seconds != null && seconds > 0 && seconds <= criticalThresholdSeconds)
+            }
+            "is_timer_expired" -> {
+                val seconds = player?.uniqueId?.let { state.getRemainingBloodthirstSeconds(it) }
+                boolText(seconds != null && seconds <= 0)
+            }
+            "last_kill_name" -> lookupPlayerName(player?.uniqueId?.let { state.findWielder(it) }?.lastKillUuid)
+            "last_kill_uuid" -> player?.uniqueId?.let { state.findWielder(it) }?.lastKillUuid?.toString() ?: "none"
+            "mace_uuid" -> player?.uniqueId?.let { state.findWielder(it) }?.maceUuid?.toString() ?: "none"
+            "bloodthirst_elapsed_seconds" -> {
+                val remaining = player?.uniqueId?.let { state.getRemainingBloodthirstSeconds(it) }
+                formatNumeric(if (remaining != null) (bloodthirstDurationSeconds() - remaining).coerceAtLeast(0.0) else 0.0)
+            }
+            "bloodthirst_elapsed_percent" -> {
+                val remaining = player?.uniqueId?.let { state.getRemainingBloodthirstSeconds(it) }
+                val elapsed = if (remaining != null) ((bloodthirstDurationSeconds() - remaining) / bloodthirstDurationSeconds()) * 100.0 else 0.0
+                "%.2f".format(Locale.US, elapsed.coerceIn(0.0, 100.0))
+            }
+            "mace_hold_duration" -> {
+                val wielder = player?.uniqueId?.let { state.findWielder(it) }
+                formatHoldDuration(if (wielder != null) 0L else 0L)
+            }
+
+            else -> null
+        }
+    }
+
+    /**
+     * Registers MiniPlaceholders expansion using reflection.
+     */
+    private fun registerMiniPlaceholders(miniPlaceholders: org.bukkit.plugin.Plugin) {
         val api = maceManager.getApi()
         val reflection = MiniPlaceholdersReflection.forLoader(miniPlaceholders.javaClass.classLoader)
 
         runCatching {
-            reflection.unregisterIfRegistered(registeredExpansion)
+            reflection.unregisterIfRegistered(registeredMiniPlaceholdersExpansion)
 
             val builder = reflection.newBuilder(EXPANSION_NAME)
             val meta = plugin.pluginMeta
@@ -141,8 +331,9 @@ class MacePlaceholderBridge(
 
             val expansion = reflection.build(builder)
             reflection.register(expansion)
-            registeredExpansion = expansion
-            plugin.logger.info("[Mace] MiniPlaceholders expansion registered ($EXPANSION_NAME)")
+            registeredMiniPlaceholdersExpansion = expansion
+            miniPlaceholdersRegistered = true
+            plugin.logger.info("[Mace] MiniPlaceholders expansion registered (<${EXPANSION_NAME}_...>)")
         }.onFailure { error ->
             plugin.logger.warning("Failed to register MiniPlaceholders expansion: ${error.message}")
             plugin.logger.fine(error.stackTraceToString())
@@ -936,14 +1127,42 @@ class MacePlaceholderBridge(
     }
 
     /**
+     * Internal PlaceholderExpansion implementation for PlaceholderAPI.
+     *
+     * This is an internal expansion that delegates placeholder handling to the bridge.
+     * It extends PlaceholderExpansion directly since we have the compile-time dependency.
+     */
+    private class ProjectMacePapiExpansion(
+        private val plugin: Plugin,
+        private val identifier: String,
+        private val author: String,
+        private val version: String,
+        private val onRequest: (OfflinePlayer?, String) -> String?
+    ) : me.clip.placeholderapi.expansion.PlaceholderExpansion() {
+
+        override fun getIdentifier(): String = identifier
+
+        override fun getAuthor(): String = author
+
+        override fun getVersion(): String = version
+
+        override fun persist(): Boolean = true
+
+        override fun onRequest(player: OfflinePlayer?, params: String): String? {
+            return onRequest.invoke(player, params)
+        }
+    }
+
+    /**
      * Companion object containing constants for the placeholder bridge.
      */
     companion object {
         /**
-         * The expansion name registered with MiniPlaceholders.
+         * The expansion name registered with both PlaceholderAPI and MiniPlaceholders.
          *
          * This is the namespace for all ProjectMace placeholders.
-         * Placeholders will be formatted as: `<projectmace_placeholder_name>`
+         * - PlaceholderAPI format: `%projectmace_placeholder_name%`
+         * - MiniPlaceholders format: `<projectmace_placeholder_name>`
          */
         private const val EXPANSION_NAME = "projectmace"
     }
