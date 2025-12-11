@@ -5,18 +5,20 @@ import me.lonaldeu.projectmace.mace.domain.model.LooseMace
 import me.lonaldeu.projectmace.mace.domain.model.MaceWielder
 import me.lonaldeu.projectmace.mace.domain.model.TotemRecord
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 internal class MaceState {
-    val maceWielders: MutableMap<UUID, MaceWielder> = mutableMapOf()
-    val looseMaces: MutableMap<UUID, LooseMace> = mutableMapOf()
-    val pendingMaceRemoval: MutableSet<UUID> = mutableSetOf()
-    val lastDamageTime: MutableMap<UUID, Double> = mutableMapOf()
-    val recentDamageFrom: MutableMap<UUID, MutableMap<UUID, DamageRecord>> = mutableMapOf()
-    val recentTotemPops: MutableMap<UUID, MutableMap<UUID, TotemRecord>> = mutableMapOf()
-    val craftCooldowns: MutableMap<UUID, Double> = mutableMapOf()
+    // Thread-safe maps for Folia compatibility (parallel region execution)
+    val maceWielders: MutableMap<UUID, MaceWielder> = ConcurrentHashMap()
+    val looseMaces: MutableMap<UUID, LooseMace> = ConcurrentHashMap()
+    val pendingMaceRemoval: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
+    val lastDamageTime: MutableMap<UUID, Double> = ConcurrentHashMap()
+    val recentDamageFrom: MutableMap<UUID, MutableMap<UUID, DamageRecord>> = ConcurrentHashMap()
+    val recentTotemPops: MutableMap<UUID, MutableMap<UUID, TotemRecord>> = ConcurrentHashMap()
+    val craftCooldowns: MutableMap<UUID, Double> = ConcurrentHashMap()
     
     // For #3: Rate limiting on announcements
-    val lastAnnouncementTime: MutableMap<String, Long> = mutableMapOf()
+    val lastAnnouncementTime: MutableMap<String, Long> = ConcurrentHashMap()
 
     fun isWielder(playerUuid: UUID): Boolean = maceWielders.containsKey(playerUuid)
 

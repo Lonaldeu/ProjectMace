@@ -1,15 +1,20 @@
 # -----------------------------------------------------------------------------
-#  General Obfuscation Settings
+#  General Obfuscation Settings (Hardened for Commercial Release)
 # -----------------------------------------------------------------------------
 -dontnote
 -dontwarn
--dontoptimize
+
+# Enable optimization for harder reverse engineering
+-optimizationpasses 5
+-optimizations !code/simplification/arithmetic,!field/*,!class/merging/*
+
+# Aggressive repackaging
 -defaultpackage ''
 -repackageclasses 'me.lonaldeu.projectmace.a'
 -allowaccessmodification
 
-# Keep attributes required for debug/runtime
--keepattributes *Annotation*,Signature,InnerClasses,SourceFile,LineNumberTable,EnclosingMethod
+# Keep only essential attributes (removed SourceFile/LineNumberTable for production)
+-keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod
 
 # -----------------------------------------------------------------------------
 #  Bukkit/Paper Rules
@@ -33,13 +38,15 @@
     public java.util.List onTabComplete(**);
 }
 
-# Keep serializable classes (ConfigModels might be used reflectively by some libs, safest to keep fields)
-# Although we map manually, keeping them avoids potential issues if we switch to reflective mapping later.
--keep class me.lonaldeu.projectmace.config.** {
+# Keep root config class (required for Bukkit YAML reflection)
+-keep class me.lonaldeu.projectmace.config.MaceConfig {
+    *;
+}
+-keep class me.lonaldeu.projectmace.config.LicenseConfig {
     *;
 }
 
-# Keep License Validator result data classes so Gson doesn't break if we switch to auto-deserialization
+# Keep License Validator result data classes so Gson doesn't break
 -keep class me.lonaldeu.projectmace.license.LicenseValidator$ValidationResult {
     *;
 }
@@ -48,4 +55,9 @@
 -keepclassmembers enum * {
     public static **[] values();
     public static ** valueOf(java.lang.String);
+}
+
+# Obfuscate all other config data classes (they're mapped manually, not by reflection)
+-keepclassmembers class me.lonaldeu.projectmace.config.** {
+    <init>(...);
 }

@@ -239,7 +239,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("com.github.lonaldeu:ProjectMace:0.1.1")
+    compileOnly("com.github.lonaldeu:ProjectMace:0.1.2")
 }
 ```
 
@@ -253,7 +253,7 @@ dependencies {
 <dependency>
     <groupId>com.github.lonaldeu</groupId>
     <artifactId>ProjectMace</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.2</version>
     <scope>provided</scope>
 </dependency>
 ```

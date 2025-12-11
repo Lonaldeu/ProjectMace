@@ -185,9 +185,9 @@ data class EnchantingConfig(
 // ═══════════════════════════════════════════════════════════════
 
 data class LicenseConfig(
-    val key: String = "YOUR-LICENSE-KEY",
+    val key: String = "",
     val product: String = "ProjectMace",
-    val apiUrl: String = "https://example.com"
+    val apiUrl: String = "https://api.atbphosting.com"
 )
 
 // ═══════════════════════════════════════════════════════════════

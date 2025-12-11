@@ -190,10 +190,4 @@ class MaceCommandService(
         sender.sendMessage(legacy.deserialize("&cYou do not have permission to use this command."))
         return false
     }
-
-    companion object {
-        // Legacy constant kept for reference, but no longer used
-        @Deprecated("Use specific command permissions instead", ReplaceWith("mace.*"))
-        private const val REQUIRED_PERMISSION = "mace.admin"
-    }
 }

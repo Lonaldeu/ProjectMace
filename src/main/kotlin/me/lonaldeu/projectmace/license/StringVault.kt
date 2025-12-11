@@ -59,18 +59,19 @@ object StringVault {
 
     /**
      * Retrieves a decrypted string.
+     * Returns empty string on any failure to avoid exposing internal state.
      */
     fun get(key: String): String {
         if (secretKey == null) {
-            throw IllegalStateException("StringVault not initialized! License check likely failed or bypassed.")
+            throw IllegalStateException("Vault not initialized.")
         }
 
-        val encrypted = strings[key] ?: return "MISSING_STRING_$key"
+        val encrypted = strings[key] ?: return ""
 
         return try {
             decrypt(encrypted)
         } catch (e: Exception) {
-            "DECRYPTION_FAILED_$key"
+            ""
         }
     }
 
