@@ -20,7 +20,7 @@
 # Reload config: /mace reload (requires permission)
 # ═══════════════════════════════════════════════════════════════════════════
 
-license-key: "YOUR-LICENSE-KEY"
+license-key: ""
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
 # │                          GENERAL SETTINGS                               │

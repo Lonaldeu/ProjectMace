@@ -64,7 +64,7 @@ class ConfigService(private val plugin: Plugin) {
      * Set default configuration values
      */
     private fun setDefaults() {
-        config.addDefault("license-key", "YOUR-LICENSE-KEY")
+        config.addDefault("license-key", "")
         
         // General
         config.addDefault("general.debug", false)
@@ -402,16 +402,12 @@ class ConfigService(private val plugin: Plugin) {
 
 
 
-    /**
-     * Helper to get license key from raw config before typed config is loaded.
-     * Checks 'license-key' (new) first, then 'license.key' (legacy).
-     */
     fun getLicenseKey(): String {
-        val newKey = config.getString("license-key", "YOUR-LICENSE-KEY")
-        if (newKey != null && newKey != "YOUR-LICENSE-KEY") {
+        val newKey = config.getString("license-key", "")
+        if (newKey != null && newKey != "YOUR-LICENSE-KEY" && newKey.isNotEmpty()) {
             return newKey
         }
-        return config.getString("license.key", "YOUR-LICENSE-KEY") ?: "YOUR-LICENSE-KEY"
+        return config.getString("license.key", "") ?: ""
     }
 
 
