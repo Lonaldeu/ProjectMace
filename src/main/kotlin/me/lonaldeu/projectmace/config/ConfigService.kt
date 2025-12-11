@@ -172,7 +172,7 @@ class ConfigService(private val plugin: Plugin) {
     fun loadSecureConfig() {
         typedConfig = MaceConfig(
             license = LicenseConfig(
-                key = config.getString("license-key", "YOUR-LICENSE-KEY") ?: "YOUR-LICENSE-KEY",
+                key = getLicenseKey(), // Use helper with fallback
                 product = "ProjectMace",
                 apiUrl = "https://api.atbphosting.com"
             ),
@@ -404,9 +404,14 @@ class ConfigService(private val plugin: Plugin) {
 
     /**
      * Helper to get license key from raw config before typed config is loaded.
+     * Checks 'license-key' (new) first, then 'license.key' (legacy).
      */
     fun getLicenseKey(): String {
-        return config.getString("license.key", "") ?: ""
+        val newKey = config.getString("license-key", "YOUR-LICENSE-KEY")
+        if (newKey != null && newKey != "YOUR-LICENSE-KEY") {
+            return newKey
+        }
+        return config.getString("license.key", "YOUR-LICENSE-KEY") ?: "YOUR-LICENSE-KEY"
     }
 
 
