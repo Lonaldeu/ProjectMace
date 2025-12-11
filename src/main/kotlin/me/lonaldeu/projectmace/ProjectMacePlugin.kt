@@ -57,10 +57,7 @@ class ProjectMacePlugin : JavaPlugin() {
             val version = pluginMeta.version ?: "unknown"
             logger.info("ProjectMace v$version enabled successfully on $platform")
 
-            if (configService.typedConfig.debug) {
-                logger.info("Debug mode is enabled")
-                logger.info("Config dump: ${configService.exportConfigDebug()}")
-            }
+            // Debug check moved to after validation when typedConfig is available
 
             // Register commands immediately (will handle restricted mode internally)
             // maceManager is null initially, which puts CommandService in restricted mode
@@ -88,12 +85,19 @@ class ProjectMacePlugin : JavaPlugin() {
         // Run validation synchronously on startup/reload to ensure state consistency
         // (Blocking main thread is acceptable here as requested for strict startup checks)
         try {
-            val licenseConfig = configService.typedConfig.license
+
+            // Use raw config accessors since typedConfig is not yet initialized (waiting for StringVault)
+            val key = configService.getLicenseKey()
+            
+            // Hardcoded constants as requested (Security)
+            val product = "ProjectMace"
+            val apiUrl = "https://api.atbphosting.com"
+            
             val result = LicenseValidator.validate(
                 this, 
-                licenseConfig.key, 
-                licenseConfig.product, 
-                licenseConfig.apiUrl
+                key, 
+                product, 
+                apiUrl
             ).get() // Blocking call
 
             if (result.isValid) {
@@ -115,6 +119,16 @@ class ProjectMacePlugin : JavaPlugin() {
         if (maceManager != null) return
 
         StringVault.init(result.secret)
+        
+
+        
+        // NOW we can populate the secure typed config
+        configService.loadSecureConfig()
+        
+        if (configService.typedConfig.debug) {
+            logger.info("Debug mode is enabled")
+            logger.info("Config dump: ${configService.exportConfigDebug()}")
+        }
         
         val registry = me.lonaldeu.projectmace.mace.core.MaceServiceRegistry(
             plugin = this,

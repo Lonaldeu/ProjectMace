@@ -24,28 +24,28 @@ object StringVault {
 
     init {
         // Permissions
-        strings["PERM_RELOAD"] = "1DCe36hsdVe5ClNPO6oyhjKdvjFeZ7KRv4joDi0IAHto1P9Y2iaC"
-        strings["PERM_UNCLAIM"] = "IJvk/Nb5TunuM+ND1axAQozlUrH1cHqDrIwxl9nDAhjUrtPdPYTJFw=="
-        strings["PERM_SEARCH"] = "qvtw71CZ98iBptWLQGrt13rOdH0boR+6Ab3B1Ip4MalPeGHmBwbW"
-        
-        // Messages
-        strings["MSG_RELOAD_SUCCESS"] = "w/Ob5CT7/yOZ+jbp0xUa3D74kkYzNwRXoPhO9QkbhTgJj94voQAmiMs8BIcVwr6c4Iu1PSvL1Jt49JftyqzXPS8C"
-        strings["MSG_LICENSE_FAIL"] = "c5OrcdjZA7dnVXkSRa6Mu0oxXk5e1WvwX55QpJVRKFak/2YEGhWFg4ISJxWgEqOuu/P+y21vFB2bwqNcQkCMKlE+oFtN6qJ/5l9XiWNr516MixqfWBgdlH1b"
-        
-        // NBT Keys
-        strings["NBT_MACE_UUID"] = "ZSyS/zeTOB4yXy8v1b+/e0PsNRxxxCnrC4La4qfa4uZxL6lGEJh6mmJ/b1fD4B4="
-        strings["NBT_MAX_DURABILITY"] = "QqM5dCw1bUeLM3cknjiODDCSYHdY5CaR64N36EsvEp+/b2Zs31in4I/85L/NIHxrQ1h0MAX6v+Du"
-        strings["NBT_LORE_DURABILITY"] = "Ol3shBkmYnOArBsl7ITvkL/cmhBlbkCioyEro+rBoz7SOFYZluZNL1agYldA6ogXE0KL/i+AbPFHEJM7zw=="
-        
-        // Critical Config Paths
-        strings["CFG_BASE_DAMAGE"] = "F9rkSfgJr3rHTcX6ozG/gpAIiCD+LHSE/Xx5YG0r2NH6fdwLgIAn5RikaqQPqN+OczZyWlX20yiecCNhh0HS"
-        strings["CFG_DAMAGE_MULT"] = "W6db5HW+rcX6En2YAd4eJVdw3/OTWAIoV3JzwVkbE1gCxrGJeEXIoeaqpJOAsfYoZsJzPpWI1NOyzV+oBNQSbqtAQUGs"
-        strings["CFG_MAX_MACES"] = "j44i20v+3TXXnh2L00pNoxO3f3oPJK3cROGVV/9tkx4SGQ/yXNetNHL6zhBbqaI="
+        strings["PERM_RELOAD"] = "Aanyy9hjPs6MZbP5/cjLwjRlXQgINFjogPs9fXLVGGkqr0i00umY"
+        strings["PERM_UNCLAIM"] = "Vw5285Ien9Bp+iK2B0VHiU7CMNWL6y5qyg6PA8b/Y0inoIhq5T46LQ=="
+        strings["PERM_SEARCH"] = "9l7eyXDIdDg2y276jEM8BcusRtRJfLsnilBFSDcJauvGAG3Ox8zc"
 
-        // Database Tables
-        strings["DB_TABLE_WIELDERS"] = "sAPVewsmkFlyU11qt5H6Us9mKLWmYfR9u+3ApFYCL1SqLGcoUL/Hwgk="
-        strings["DB_TABLE_LOOSE"] = "Qv/CkmOXbDkzCEJwb+k96oa+9GqBW61k7XP8mLlHRRcTdXDwOI1i"
-        strings["DB_TABLE_PENDING"] = "Bgn6+pdm8K3HucVOkBZNE1n5XWo2zqc/ji9tTUZVlemxCABRfJUcQRdajwrJFBzc"
+        // Messages
+        strings["MSG_RELOAD_SUCCESS"] = "IIQ2Qs9Q7C8y/HUyWi8zZZGv2fuWDURq6+ZlvHhFhPTS7cUlZVOi0VZV3VaUbnpYtaC0nWCqj/bcuGsLEC+TjanH"
+        strings["MSG_LICENSE_FAIL"] = "z0j//2JZm2P0cde5fPwcAjmbTuAzgKg7iE0o2BhOGQaZHXrYrCy7sRI/AOfsDEjj0kvg4zxfFpZiGxkmkj7agOqxJ0fjnazQPArEV3Q11Or01Ns0hDd1RMRW"
+
+        // NBT Keys (Protecting internal identifiers)
+        strings["NBT_MACE_UUID"] = "YMqAFFjQtQsjI34pDZaYYYP3SiwLQqvG9wDVqEXUCyhp8/tJP3BW2/DL0PfPcwg="
+        strings["NBT_MAX_DURABILITY"] = "bds/ry5425waRTsctXGIruUw0hZNwfxANHeP//7pNAb3hC0OF6LJ3G1M0X5cPSA1pnmLMrkuTlCK"
+        strings["NBT_LORE_DURABILITY"] = "hEe1opoDID9xlKiOHzD+Lcq6NNFU9YU7Z8bz5wdwIpfBTqqAWYLnNLcRVensIzdSmAR5u5HlN9V6SRLWFw=="
+
+        // Critical Configuration Paths
+        strings["CFG_BASE_DAMAGE"] = "nqV9gUEY6h4ZXXlF/Z8d2s+ezgsUT4gSmfLLa8ZQdRIWi18PMLu5rrZtRFd6U5xxCPHz8d/MABXd6z2ogYrq"
+        strings["CFG_DAMAGE_MULT"] = "MJCbzMyaijsmxbJ8ve6qKftP5C+nSml38kpCoiLDImtZQvxqsgJTFwhuLAmlUqrtmaF06+yx7eeQN9fpsEUC2ZFnDBDO"
+        strings["CFG_MAX_MACES"] = "ACR/A/2iDRmD0n+ZtvwkJTjns7IBRU1GfS7QiROu6f+bvHBtQxlJQo5P/yCnTg=="
+        
+        // Database Table Names (Schema protection)
+        strings["DB_TABLE_WIELDERS"] = "mBoSxGiHbDyRtnq9KD91OzC33DO+FH3ZsFFv94c/WmC4Wmd1ABtG19M="
+        strings["DB_TABLE_LOOSE"] = "/JiUePy8JVt5rdyXO2JhnHLtMqlN/ZFYYkRcff1WxC5GfAbWNiac"
+        strings["DB_TABLE_PENDING"] = "Fz3ueTKmiYZlqVejaf9WAB6EVjAjcrsfXtXUuBCxGJb8ffobqBavjv/NIIySiPhb"
     }
 
     /**

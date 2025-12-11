@@ -3,37 +3,15 @@ Daemon will be stopped at the end of the build
 Reusing configuration cache.
 > Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
 > Task :clean
+> Task :processTestResources NO-SOURCE
+> Task :processResources
 
 > Task :compileKotlin FAILED
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:66:38 Argument type mismatch: actual type is 'Function0<Unit>', but 'LegendaryMaceManager?' was expected.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:66:38 No value passed for parameter 'onReload'.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:130:11 Syntax error: Expecting a top level declaration.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:130:17 Syntax error: Expecting a top level declaration.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:130:18 Syntax error: Expecting a top level declaration.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:130:19 Syntax error: Expecting a top level declaration.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:130:21 Syntax error: Expecting a top level declaration.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:130:30 Syntax error: Expecting a top level declaration.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:130:32 Syntax error: Expecting a top level declaration.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:130:32 Function declaration must have a name.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:131:13 Unresolved reference 'logger'.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:131:64 Unresolved reference 'e'.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:132:13 Unresolved reference 'e'.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:133:13 Unresolved reference 'isEnabled'.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:134:19 Type mismatch: inferred type is 'ERROR CLASS: Unresolved name: e', but 'Throwable' was expected.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:134:19 Unresolved reference 'e'.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:136:5 Syntax error: Expecting a top level declaration.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:138:5 Modifier 'override' is not applicable to 'top level function'.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:141:19 Unresolved reference 'configService'.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:142:17 Unresolved reference 'configService'.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:143:17 Unresolved reference 'logger'.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:146:13 Unresolved reference 'logger'.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:149:13 Unresolved reference 'logger'.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:153:13 Unresolved reference 'maceManager'.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:154:13 Unresolved reference 'maceManager'.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:157:1 Syntax error: Expecting a top level declaration.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/LicenseValidator.kt:5:8 Unresolved reference 'kotlinx'.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/LicenseValidator.kt:6:8 Unresolved reference 'kotlinx'.
-e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/StringVault.kt:66:75 Unresolved reference 'length'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:104:17 Unresolved reference 'initializeGameSystems'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:116:6 Syntax error: Expecting 'catch' or 'finally'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:118:5 Modifier 'private' is not applicable to 'local function'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:162:5 Modifier 'override' is not applicable to 'local function'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:181:2 Syntax error: Missing '}.
 
 FAILURE: Build failed with an exception.
 
@@ -49,5 +27,5 @@ Execution failed for task ':compileKotlin'.
 > Get more help at https://help.gradle.org.
 
 BUILD FAILED in 6s
-2 actionable tasks: 2 executed
+3 actionable tasks: 3 executed
 Configuration cache entry reused.

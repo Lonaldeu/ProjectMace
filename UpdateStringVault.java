@@ -25,9 +25,9 @@ public class UpdateStringVault {
         STRINGS_TO_ENCRYPT.put("NBT_LORE_DURABILITY", "legendary_mace_current_durability");
 
         // Critical Config Paths
-        STRINGS_TO_ENCRYPT.put("CFG_BASE_DAMAGE", "features.combat.scoring.base-damage");
-        STRINGS_TO_ENCRYPT.put("CFG_DAMAGE_MULT", "features.combat.scoring.damage-multiplier");
-        STRINGS_TO_ENCRYPT.put("CFG_MAX_MACES", "max-legendary-maces");
+        STRINGS_TO_ENCRYPT.put("CFG_BASE_DAMAGE", "gameplay.combat.scoring.base-damage");
+        STRINGS_TO_ENCRYPT.put("CFG_DAMAGE_MULT", "gameplay.combat.scoring.damage-multiplier");
+        STRINGS_TO_ENCRYPT.put("CFG_MAX_MACES", "gameplay.max-maces");
 
         // Database Tables
         STRINGS_TO_ENCRYPT.put("DB_TABLE_WIELDERS", "mace_wielders");
