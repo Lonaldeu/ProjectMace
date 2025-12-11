@@ -1,0 +1,34 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.1.0/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Reusing configuration cache.
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :clean
+
+> Task :compileKotlin FAILED
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/mace/LegendaryMaceManager.kt:187:59 Unresolved reference 'getLastChanceThresholdSeconds'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/mace/LegendaryMaceManager.kt:188:57 Unresolved reference 'getIdleWhisperIntervalTicks'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/mace/LegendaryMaceManager.kt:189:59 Unresolved reference 'getWarningThresholdPercentage'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/mace/LegendaryMaceManager.kt:456:100 Unresolved reference 'concurrentBackgroundTasks'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/mace/events/DeathAndDropEvents.kt:62:66 Unresolved reference 'isDropOnDeathBlocked'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/mace/events/MaceEnchantEvents.kt:34:21 Unresolved reference 'isEnchantingTableAllowed'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/mace/events/MaceEnchantEvents.kt:46:21 Unresolved reference 'isEnchantingTableAllowed'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/mace/events/MaceEnchantEvents.kt:97:21 Unresolved reference 'isAnvilAllowed'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/mace/events/MaceEnchantEvents.kt:142:30 Unresolved reference 'getBlockedEnchantments'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/mace/events/MaceEnchantEvents.kt:143:30 Unresolved reference 'getAllowedEnchantments'.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to generate a Build Scan (Powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 5s
+2 actionable tasks: 2 executed
+Configuration cache entry reused.

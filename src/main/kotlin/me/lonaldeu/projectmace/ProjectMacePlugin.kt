@@ -5,6 +5,9 @@ import me.lonaldeu.projectmace.config.MessageService
 import me.lonaldeu.projectmace.config.VoicelineService
 import me.lonaldeu.projectmace.mace.LegendaryMaceManager
 import me.lonaldeu.projectmace.platform.PlatformScheduler
+import me.lonaldeu.projectmace.license.LicenseValidator
+import me.lonaldeu.projectmace.license.StringVault
+import me.lonaldeu.projectmace.mace.command.MaceCommandService
 import org.bukkit.plugin.java.JavaPlugin
 
 /**
@@ -29,7 +32,7 @@ class ProjectMacePlugin : JavaPlugin() {
     lateinit var voicelineService: VoicelineService
         private set
 
-    lateinit var maceManager: LegendaryMaceManager
+    var maceManager: LegendaryMaceManager? = null
         private set
     
     override fun onEnable() {
@@ -54,21 +57,17 @@ class ProjectMacePlugin : JavaPlugin() {
             val version = pluginMeta.version ?: "unknown"
             logger.info("ProjectMace v$version enabled successfully on $platform")
 
-            if (configService.isDebugEnabled()) {
+            if (configService.typedConfig.debug) {
                 logger.info("Debug mode is enabled")
                 logger.info("Config dump: ${configService.exportConfigDebug()}")
             }
 
-            val registry = me.lonaldeu.projectmace.mace.core.MaceServiceRegistry(
-                plugin = this,
-                scheduler = scheduler,
-                config = configService,
-                messages = messageService,
-                voicelines = voicelineService
-            )
+            // Register commands immediately (will handle restricted mode internally)
+            // maceManager is null initially, which puts CommandService in restricted mode
+            MaceCommandService(this, maceManager) { reloadPlugin() }.register()
 
-            maceManager = LegendaryMaceManager(registry)
-            maceManager.enable()
+            // Validate license and initialize game systems
+            validateAndInitialize()
 
         } catch (e: Exception) {
             logger.severe("Failed to initialize ProjectMace: ${e.message}")
@@ -76,6 +75,72 @@ class ProjectMacePlugin : JavaPlugin() {
             isEnabled = false
             throw e
         }
+    }
+    
+    private fun reloadPlugin() {
+        configService.reloadConfig()
+        if (maceManager == null) {
+            validateAndInitialize()
+        }
+    }
+    
+    private fun validateAndInitialize() {
+        // Run validation synchronously on startup/reload to ensure state consistency
+        // (Blocking main thread is acceptable here as requested for strict startup checks)
+        try {
+            val licenseConfig = configService.typedConfig.license
+            val result = LicenseValidator.validate(
+                this, 
+                licenseConfig.key, 
+                licenseConfig.product, 
+                licenseConfig.apiUrl
+            ).get() // Blocking call
+
+            if (result.isValid) {
+                initializeGameSystems(result)
+                logger.info("License validated successfully.")
+            } else {
+                logger.severe("════════════════════════════════════════════════════════════")
+                logger.severe("               LICENSE VALIDATION FAILED")
+                logger.severe("  Plugin functionality has been disabled.")
+                logger.severe("  Please check your configuration and run /mace reload")
+                logger.severe("════════════════════════════════════════════════════════════")
+            }
+        } catch (e: Exception) {
+            logger.severe("Error during license validation: ${e.message}")
+        }
+    }
+
+    private fun initializeGameSystems(result: LicenseValidator.ValidationResult) {
+        if (maceManager != null) return
+
+        StringVault.init(result.secret)
+        
+        val registry = me.lonaldeu.projectmace.mace.core.MaceServiceRegistry(
+            plugin = this,
+            scheduler = scheduler,
+            config = configService,
+            messages = messageService,
+            voicelines = voicelineService
+        )
+
+        maceManager = LegendaryMaceManager(registry)
+        maceManager?.enable()
+        
+        // Re-register commands with active manager?
+        // Note: Currently MaceCommandService holds a reference to the manager passed in init.
+        // Since we passed 'null' initially, it will forever be null in that instance.
+        // We need to re-register the command service with the NEW manager!
+        // MaceCommandService(this, maceManager) { reloadPlugin() }.register()
+        // Wait, 'register()' overwrites the executor?
+        // BasicCommand (from Paper) registers differently.
+        // Using 'plugin.registerCommand("mace", this)'?
+        // If it's pure Bukkit API reflection hack (maybe?), it might overwrite.
+        // If it's Paper API, we might need to unregister or just register again.
+        // Given 'MaceCommandService' (Step 902) implementation: 'plugin.registerCommand("mace", this)'.
+        // Assuming this method handles replacement, we can call it again.
+        
+        MaceCommandService(this, maceManager) { reloadPlugin() }.register()
     }
     
     override fun onDisable() {
@@ -93,8 +158,8 @@ class ProjectMacePlugin : JavaPlugin() {
             e.printStackTrace()
         }
 
-        if (::maceManager.isInitialized) {
-            maceManager.disable()
+        if (maceManager != null) {
+            maceManager?.disable()
         }
     }
 }

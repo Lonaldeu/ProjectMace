@@ -181,10 +181,21 @@ data class EnchantingConfig(
 )
 
 // ═══════════════════════════════════════════════════════════════
+//                   LICENSE CONFIGURATION
+// ═══════════════════════════════════════════════════════════════
+
+data class LicenseConfig(
+    val key: String = "YOUR-LICENSE-KEY",
+    val product: String = "ProjectMace",
+    val apiUrl: String = "https://example.com"
+)
+
+// ═══════════════════════════════════════════════════════════════
 //                     ROOT CONFIGURATION
 // ═══════════════════════════════════════════════════════════════
 
 data class MaceConfig(
+    val license: LicenseConfig = LicenseConfig(),
     val storage: String = "yaml",
     val debug: Boolean = false,
     val maxLegendaryMaces: Int = 3,

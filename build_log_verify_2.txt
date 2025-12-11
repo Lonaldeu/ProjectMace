@@ -1,0 +1,28 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.1.0/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Reusing configuration cache.
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :clean
+> Task :processTestResources NO-SOURCE
+> Task :processResources
+
+> Task :compileKotlin FAILED
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/config/ConfigService.kt:415:16 Unresolved reference 'config'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/config/ConfigService.kt:418:1 Syntax error: Expecting a top level declaration.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to generate a Build Scan (Powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 7s
+3 actionable tasks: 3 executed
+Configuration cache entry reused.

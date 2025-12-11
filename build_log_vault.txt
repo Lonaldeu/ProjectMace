@@ -1,0 +1,43 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.1.0/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Reusing configuration cache.
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :clean
+> Task :processTestResources NO-SOURCE
+> Task :processResources
+
+> Task :compileKotlin FAILED
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/ProjectMacePlugin.kt:117:21 Unresolved reference 'init'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/StringVault.kt:43:9 Unresolved reference 'secretKey'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/StringVault.kt:43:79 Unresolved reference 'KEY_ALGORITHM'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/StringVault.kt:50:13 Unresolved reference 'secretKey'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/StringVault.kt:54:25 Unresolved reference 'strings'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/StringVault.kt:57:21 Argument type mismatch: actual type is 'MatchGroup', but 'String' was expected.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/StringVault.kt:67:28 Unresolved reference 'GCM_IV_LENGTH'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/StringVault.kt:68:44 Unresolved reference 'GCM_IV_LENGTH'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/StringVault.kt:70:49 Unresolved reference 'GCM_TAG_LENGTH'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/StringVault.kt:72:50 Unresolved reference 'GCM_IV_LENGTH'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/StringVault.kt:73:34 Unresolved reference 'GCM_IV_LENGTH'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/StringVault.kt:75:41 Unresolved reference 'ALGORITHM'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/StringVault.kt:76:42 Unresolved reference 'secretKey'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/StringVault.kt:86:9 Unresolved reference 'strings'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/StringVault.kt:88:1 Syntax error: Expecting a top level declaration.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/mace/command/MaceCommandService.kt:57:59 Unresolved reference 'get'.
+e: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/mace/command/MaceCommandService.kt:61:59 Unresolved reference 'get'.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to generate a Build Scan (Powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 6s
+3 actionable tasks: 3 executed
+Configuration cache entry reused.

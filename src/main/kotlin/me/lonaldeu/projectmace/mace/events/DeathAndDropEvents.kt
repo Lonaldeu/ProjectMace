@@ -59,7 +59,7 @@ internal class DeathAndDropEvents(
     }
 
     private fun bloodthirstDurationSeconds() = context.config.bloodthirstDurationSeconds
-    private val blockDropOnDeath get() = context.registry.config.isDropOnDeathBlocked()
+    private val blockDropOnDeath get() = context.registry.config.typedConfig.inventoryGuard.blockDropOnDeath
     private fun nowSeconds() = context.nowSeconds()
 
     @EventHandler(ignoreCancelled = true)

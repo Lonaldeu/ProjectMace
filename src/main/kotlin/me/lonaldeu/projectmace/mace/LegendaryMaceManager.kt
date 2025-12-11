@@ -89,38 +89,38 @@ class LegendaryMaceManager(
         plugin = plugin,
         maceManager = this,
         bloodthirstDurationSeconds = ::bloodthirstDurationSeconds,
-        warningThresholdSeconds = plugin.configService.getPlaceholderWarningThresholdSeconds(),
-        criticalThresholdSeconds = plugin.configService.getPlaceholderCriticalThresholdSeconds()
+        warningThresholdSeconds = plugin.configService.typedConfig.timers.warningThresholdSeconds.toDouble(),
+        criticalThresholdSeconds = plugin.configService.typedConfig.timers.criticalThresholdSeconds.toDouble()
     )
     private val commandService = MaceCommandService(plugin, this, ::reloadConfig)
 
     private val state = MaceState()
     private val keys = MaceKeys(plugin)
-    private val items = MaceItems(keys, plugin.configService.getCraftingDurability())
+    private val items = MaceItems(keys, plugin.configService.typedConfig.crafting.durability)
     private val messaging = MaceMessaging(
         scheduler = scheduler,
         legacySerializer = legacySerializer,
         miniMessage = miniMessage,
         announcements = announcements,
-        announcementCooldownMillis = plugin.configService.getAnnouncementCooldownMillis(),
+        announcementCooldownMillis = plugin.configService.typedConfig.announcements.cooldownMillis,
         lastAnnouncementTimes = state.lastAnnouncementTime
     )
     private val chunkControl = MaceChunkControl(
         plugin = plugin,
         scheduler = scheduler,
-        enableChunkForceLoad = plugin.configService.isChunkForceLoadEnabled(),
-        chunkUnloadDelayTicks = plugin.configService.getChunkUnloadDelayTicks()
+        enableChunkForceLoad = plugin.configService.typedConfig.performance.chunkForceLoadEnabled,
+        chunkUnloadDelayTicks = plugin.configService.typedConfig.performance.chunkUnloadDelaySeconds * 20L
     )
     private val effects = MaceEffects(
         state = state,
         scheduler = scheduler,
         bloodthirstDurationSeconds = ::bloodthirstDurationSeconds,
-        particleIntervalTicks = plugin.configService.getParticleIntervalTicks(),
-        particleCount = plugin.configService.getParticleCount(),
-        soundVolume = plugin.configService.getSoundVolume().toFloat(),
-        soundPitchMin = plugin.configService.getSoundPitchMin().toFloat(),
-        soundPitchMax = plugin.configService.getSoundPitchMax().toFloat(),
-        soundHeartbeatThresholdSeconds = plugin.configService.getSoundHeartbeatThresholdSeconds(),
+        particleIntervalTicks = plugin.configService.typedConfig.effects.particles.intervalSeconds * 20L,
+        particleCount = plugin.configService.typedConfig.effects.particles.count,
+        soundVolume = plugin.configService.typedConfig.effects.sounds.volume,
+        soundPitchMin = plugin.configService.typedConfig.effects.sounds.pitchMin,
+        soundPitchMax = plugin.configService.typedConfig.effects.sounds.pitchMax,
+        soundHeartbeatThresholdSeconds = plugin.configService.typedConfig.effects.sounds.heartbeatThresholdSeconds.toDouble(),
         nowSeconds = ::nowSeconds
     )
     private val eventLogger = LegendaryMaceLogger(plugin)
@@ -142,10 +142,10 @@ class LegendaryMaceManager(
         plugin = plugin,
         isRealMace = lifecycle::isRealMace,
         messageService = messageService,
-        blockDecoratedPots = plugin.configService.isInventoryGuardBlockDecoratedPots(),
-        blockItemFrames = plugin.configService.isInventoryGuardBlockItemFrames(),
-        blockArmorStands = plugin.configService.isInventoryGuardBlockArmorStands(),
-        blockAllays = plugin.configService.isInventoryGuardBlockAllays()
+        blockDecoratedPots = plugin.configService.typedConfig.inventoryGuard.blockDecoratedPots,
+        blockItemFrames = plugin.configService.typedConfig.inventoryGuard.blockItemFrames,
+        blockArmorStands = plugin.configService.typedConfig.inventoryGuard.blockArmorStands,
+        blockAllays = plugin.configService.typedConfig.inventoryGuard.blockAllays
     )
     private val despawnTasks = MaceDespawnTasks(
         scheduler = scheduler,
@@ -154,10 +154,10 @@ class LegendaryMaceManager(
         lifecycle = lifecycle,
         messaging = messaging,
         announcements = announcements,
-        looseMaceDespawnDelayTicks = plugin.configService.getLooseMaceDespawnDelayTicks()
+        looseMaceDespawnDelayTicks = plugin.configService.typedConfig.looseMace.despawnDelaySeconds * 20L
     )
     private val persistence: MacePersistence = PersistenceFactory(plugin).create(
-        storageType = plugin.configService.getStorageType(),
+        storageType = plugin.configService.typedConfig.storage,
         maceWielders = state.maceWielders,
         looseMaces = state.looseMaces,
         pendingMaceRemoval = state.pendingMaceRemoval,
@@ -184,9 +184,9 @@ class LegendaryMaceManager(
         messaging = messaging,
         flushDataIfDirty = ::flushDataIfDirty,
         bloodthirstDurationSeconds = ::bloodthirstDurationSeconds,
-        lastChanceThresholdSeconds = plugin.configService.getLastChanceThresholdSeconds(),
-        idleWhisperIntervalTicks = plugin.configService.getIdleWhisperIntervalTicks(),
-        warningThresholdPercentage = plugin.configService.getWarningThresholdPercentage(),
+        lastChanceThresholdSeconds = plugin.configService.typedConfig.timers.lastChanceThresholdSeconds.toDouble(),
+        idleWhisperIntervalTicks = plugin.configService.typedConfig.timers.idleWhisperIntervalTicks,
+        warningThresholdPercentage = 0.05,
         nowSeconds = ::nowSeconds,
         idleVoicelines = plugin.voicelineService.getIdleLines(),
         nearingExpiryVoicelines = plugin.voicelineService.getNearingExpiryLines(),
@@ -447,51 +447,47 @@ class LegendaryMaceManager(
 
     // region Utility helpers
 
-    private fun isCraftingEnabled(): Boolean = plugin.configService.get("crafting.enabled", true)
+    private fun isCraftingEnabled(): Boolean = plugin.configService.typedConfig.crafting.enabled
 
-    private fun isInventoryGuardEnabled(): Boolean = plugin.configService.get("features.inventory-guard.enabled", true)
+    private fun isInventoryGuardEnabled(): Boolean = plugin.configService.typedConfig.inventoryGuard.enabled
 
-    private fun isPlaceholderExpansionEnabled(): Boolean = plugin.configService.get("features.placeholders.enabled", true)
+    private fun isPlaceholderExpansionEnabled(): Boolean = plugin.configService.typedConfig.placeholders.enabled
 
-    private fun isBackgroundTasksEnabled(): Boolean = plugin.configService.get("features.background-tasks.enabled", true)
+    private fun isBackgroundTasksEnabled(): Boolean = plugin.config.getBoolean("features.background-tasks.enabled", true)
 
-    private fun maxLegendaryMaces(): Int = plugin.configService.get(
-        "max-legendary-maces",
-        MaceConstants.DEFAULT_MAX_LEGENDARY_MACES
-    ).coerceAtLeast(1)
+    private fun maxLegendaryMaces(): Int = plugin.configService.typedConfig.maxLegendaryMaces
 
-    private fun maxMacesPerPlayer(): Int = plugin.configService.getMaxMacesPerPlayer()
+    private fun maxMacesPerPlayer(): Int = plugin.configService.typedConfig.crafting.maxPerPlayer
 
     private fun bloodthirstDurationSeconds(): Long {
-        val hours = plugin.configService.get("bloodthirst-duration-hours", 24).coerceAtLeast(0)
+        val hours = plugin.configService.typedConfig.bloodthirstDurationHours
         return if (hours == 0) Long.MAX_VALUE else hours.toLong() * 60L * 60L
     }
 
     private fun loadCombatSettings(): MaceCombatService.CombatSettings {
-        val bloodthirstHours = plugin.configService.get("bloodthirst-duration-hours", 24)
-        val combatEnabled = if (bloodthirstHours == 0) false else plugin.configService.get("features.combat.enabled", true)
+        val config = plugin.configService.typedConfig
+        val bloodthirstHours = config.bloodthirstDurationHours
+        val combatEnabled = if (bloodthirstHours == 0) false else config.combat.enabled
         
         return MaceCombatService.CombatSettings(
-        enabled = combatEnabled,
-        trackDamage = plugin.configService.get("features.combat.track-damage", true),
-        awardKills = plugin.configService.get("features.combat.award-worthy-kills", true),
-        sendMessages = plugin.configService.get("features.combat.send-messages", true),
-        sendVoicelines = plugin.configService.get("features.combat.send-voicelines", true),
-        baseDamage = plugin.configService.getCombatBaseDamage(),
-        damageMultiplier = plugin.configService.getCombatDamageMultiplier(),
-        healthMultiplier = plugin.configService.getCombatHealthMultiplier(),
-        armorMultiplier = plugin.configService.getCombatArmorMultiplier(),
-        totemBonus = plugin.configService.getCombatTotemBonus(),
-        worthyThreshold = plugin.configService.getCombatWorthyThreshold(),
-        easyThreshold = plugin.configService.getCombatEasyThreshold(),
-        holdTimeBaseDamageRequirement = plugin.configService.getHoldTimeBaseDamageRequirement(),
-        holdTimeEscalationRate = plugin.configService.getHoldTimeEscalationRate()
-    )
+            enabled = combatEnabled,
+            trackDamage = config.combat.trackDamage,
+            awardKills = config.combat.awardWorthyKills,
+            sendMessages = config.combat.sendMessages,
+            sendVoicelines = config.combat.sendVoicelines,
+            baseDamage = config.combat.scoring.baseDamage,
+            damageMultiplier = config.combat.scoring.damageMultiplier,
+            healthMultiplier = config.combat.scoring.healthMultiplier,
+            armorMultiplier = config.combat.scoring.armorMultiplier,
+            totemBonus = config.combat.scoring.totemBonus,
+            worthyThreshold = config.combat.scoring.worthyKillThreshold,
+            easyThreshold = config.combat.scoring.easyKillThreshold,
+            holdTimeBaseDamageRequirement = config.holdTime.baseDamageRequirement,
+            holdTimeEscalationRate = config.holdTime.escalationRate
+        )
     }
 
-    private fun craftCooldownSeconds(): Double = plugin.configService
-        .get("crafting.cooldown-seconds", 3.0)
-        .coerceAtLeast(0.0)
+    private fun craftCooldownSeconds(): Double = plugin.configService.typedConfig.crafting.cooldownSeconds
 
     // endregion
 

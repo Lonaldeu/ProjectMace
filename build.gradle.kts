@@ -3,6 +3,15 @@ plugins {
     id("com.gradleup.shadow") version "9.2.1"
 }
 
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.guardsquare:proguard-gradle:7.5.0")
+    }
+}
+
 group = "me.lonaldeu"
 version = "0.1.2"
 val artifactName = "ProjectMace"
@@ -56,7 +65,28 @@ tasks.jar {
 }
 
 tasks.build {
+    dependsOn("proguard")
+}
+
+task("proguard", proguard.gradle.ProGuardTask::class) {
     dependsOn(tasks.shadowJar)
+    configuration("proguard.pro")
+    
+    val shadowJar = tasks.shadowJar.get()
+    
+    injars(shadowJar.archiveFile)
+    outjars(shadowJar.archiveFile.get().asFile.parentFile.resolve("${shadowJar.archiveBaseName.get()}-${shadowJar.archiveVersion.get()}-obf.jar"))
+    
+    // Automatically find library jars
+    libraryjars(sourceSets.main.get().compileClasspath)
+    
+    // Get JDK 21 path from toolchain service
+    val javaToolchains = project.extensions.getByType(JavaToolchainService::class.java)
+    val javaLauncher = javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+    val jdkHome = javaLauncher.get().metadata.installationPath.asFile
+    libraryjars(jdkHome.resolve("jmods"))
 }
 
 tasks.test {

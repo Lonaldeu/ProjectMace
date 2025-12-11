@@ -4,6 +4,7 @@ import me.lonaldeu.projectmace.ProjectMacePlugin
 import me.lonaldeu.projectmace.mace.domain.model.MaceWielder
 import me.lonaldeu.projectmace.mace.domain.model.LooseMace
 import me.lonaldeu.projectmace.mace.persistence.MacePersistence
+import me.lonaldeu.projectmace.license.StringVault
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.entity.Player
@@ -59,8 +60,9 @@ internal class SqlitePersistence(
         val conn = getConnection()
         conn.createStatement().use { stmt ->
             // Wielders table
+            val wieldersTable = StringVault.get("DB_TABLE_WIELDERS")
             stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS mace_wielders (
+                CREATE TABLE IF NOT EXISTS $wieldersTable (
                     player_uuid TEXT PRIMARY KEY,
                     mace_uuid TEXT NOT NULL,
                     timer_end REAL NOT NULL,
@@ -72,8 +74,9 @@ internal class SqlitePersistence(
             """.trimIndent())
             
             // Loose maces table
+            val looseTable = StringVault.get("DB_TABLE_LOOSE")
             stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS loose_maces (
+                CREATE TABLE IF NOT EXISTS $looseTable (
                     mace_uuid TEXT PRIMARY KEY,
                     world TEXT NOT NULL,
                     x REAL NOT NULL,
@@ -86,15 +89,16 @@ internal class SqlitePersistence(
             """.trimIndent())
             
             // Pending removal table
+            val pendingTable = StringVault.get("DB_TABLE_PENDING")
             stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS pending_mace_removal (
+                CREATE TABLE IF NOT EXISTS $pendingTable (
                     mace_uuid TEXT PRIMARY KEY
                 )
             """.trimIndent())
             
             // Create indexes for faster lookups
-            stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_wielders_mace ON mace_wielders(mace_uuid)")
-            stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_loose_world ON loose_maces(world)")
+            stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_wielders_mace ON $wieldersTable(mace_uuid)")
+            stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_loose_world ON $looseTable(world)")
         }
         conn.commit()
         logger.info("[SQLite] Database tables initialized")
@@ -125,7 +129,8 @@ internal class SqlitePersistence(
     
     private fun loadWielders() {
         val conn = getConnection()
-        conn.prepareStatement("SELECT * FROM mace_wielders").use { stmt ->
+        val table = StringVault.get("DB_TABLE_WIELDERS")
+        conn.prepareStatement("SELECT * FROM $table").use { stmt ->
             stmt.executeQuery().use { rs ->
                 while (rs.next()) {
                     val playerUuid = UUID.fromString(rs.getString("player_uuid"))
@@ -159,7 +164,8 @@ internal class SqlitePersistence(
         val looseForResume = mutableListOf<UUID>()
         val conn = getConnection()
         
-        conn.prepareStatement("SELECT * FROM loose_maces").use { stmt ->
+        val table = StringVault.get("DB_TABLE_LOOSE")
+        conn.prepareStatement("SELECT * FROM $table").use { stmt ->
             stmt.executeQuery().use { rs ->
                 while (rs.next()) {
                     val maceUuid = UUID.fromString(rs.getString("mace_uuid"))
@@ -192,7 +198,8 @@ internal class SqlitePersistence(
     
     private fun loadPendingRemoval() {
         val conn = getConnection()
-        conn.prepareStatement("SELECT mace_uuid FROM pending_mace_removal").use { stmt ->
+        val table = StringVault.get("DB_TABLE_PENDING")
+        conn.prepareStatement("SELECT mace_uuid FROM $table").use { stmt ->
             stmt.executeQuery().use { rs ->
                 while (rs.next()) {
                     val uuid = runCatching { UUID.fromString(rs.getString("mace_uuid")) }.getOrNull()
@@ -237,7 +244,8 @@ internal class SqlitePersistence(
             
             // Delete removed records first
             if (deletedWielders.isNotEmpty()) {
-                conn.prepareStatement("DELETE FROM mace_wielders WHERE player_uuid = ?").use { stmt ->
+                val table = StringVault.get("DB_TABLE_WIELDERS")
+                conn.prepareStatement("DELETE FROM $table WHERE player_uuid = ?").use { stmt ->
                     deletedWielders.forEach { uuid ->
                         stmt.setString(1, uuid.toString())
                         stmt.addBatch()
@@ -248,7 +256,8 @@ internal class SqlitePersistence(
             }
             
             if (deletedLooseMaces.isNotEmpty()) {
-                conn.prepareStatement("DELETE FROM loose_maces WHERE mace_uuid = ?").use { stmt ->
+                val table = StringVault.get("DB_TABLE_LOOSE")
+                conn.prepareStatement("DELETE FROM $table WHERE mace_uuid = ?").use { stmt ->
                     deletedLooseMaces.forEach { uuid ->
                         stmt.setString(1, uuid.toString())
                         stmt.addBatch()
@@ -259,8 +268,9 @@ internal class SqlitePersistence(
             }
             
             // UPSERT wielders using INSERT OR REPLACE
+            val wieldersTable = StringVault.get("DB_TABLE_WIELDERS")
             conn.prepareStatement("""
-                INSERT OR REPLACE INTO mace_wielders 
+                INSERT OR REPLACE INTO $wieldersTable 
                 (player_uuid, mace_uuid, timer_end, last_chance, last_kill_uuid, total_hold_time_minutes, current_hold_session_start)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             """.trimIndent()).use { stmt ->
@@ -283,8 +293,9 @@ internal class SqlitePersistence(
             }
             
             // UPSERT loose maces using INSERT OR REPLACE
+            val looseTable = StringVault.get("DB_TABLE_LOOSE")
             conn.prepareStatement("""
-                INSERT OR REPLACE INTO loose_maces 
+                INSERT OR REPLACE INTO $looseTable 
                 (mace_uuid, world, x, y, z, timer_end, original_owner_uuid, last_chance)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """.trimIndent()).use { stmt ->
@@ -308,10 +319,11 @@ internal class SqlitePersistence(
             }
             
             // Sync pending removal table (full replace since it's small)
+            val pendingTable = StringVault.get("DB_TABLE_PENDING")
             conn.createStatement().use { stmt ->
-                stmt.executeUpdate("DELETE FROM pending_mace_removal")
+                stmt.executeUpdate("DELETE FROM $pendingTable")
             }
-            conn.prepareStatement("INSERT INTO pending_mace_removal (mace_uuid) VALUES (?)").use { stmt ->
+            conn.prepareStatement("INSERT INTO $pendingTable (mace_uuid) VALUES (?)").use { stmt ->
                 pendingMaceRemoval.forEach { uuid ->
                     stmt.setString(1, uuid.toString())
                     stmt.addBatch()

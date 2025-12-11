@@ -1,5 +1,7 @@
 package me.lonaldeu.projectmace.mace.command
 
+import me.lonaldeu.projectmace.license.StringVault
+
 import me.lonaldeu.projectmace.mace.LegendaryMaceManager
 import io.papermc.paper.command.brigadier.BasicCommand
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -13,7 +15,7 @@ import java.util.UUID
 
 class MaceCommandService(
     private val plugin: JavaPlugin,
-    private val manager: LegendaryMaceManager,
+    private val manager: LegendaryMaceManager?,
     private val onReload: () -> Unit
 ) : BasicCommand {
 
@@ -27,6 +29,19 @@ class MaceCommandService(
     override fun execute(stack: CommandSourceStack, args: Array<String>) {
         val sender = stack.sender
 
+        // Restricted mode check
+        if (manager == null) {
+            if (args.isNotEmpty() && args[0].lowercase(Locale.US) == "reload") {
+                if (!ensurePermission(sender, "mace.reload")) return
+                onReload()
+                sender.sendMessage(legacy.deserialize("&aConfiguration reloaded successfully!"))
+                return
+            }
+            sender.sendMessage(legacy.deserialize("&cLicense validation failed! Plugin functionality is disabled."))
+            sender.sendMessage(legacy.deserialize("&cPlease check config.yml and run &e/mace reload"))
+            return
+        }
+
         if (args.isEmpty()) {
             if (!ensurePermission(sender, "mace.help")) return
             sendUsage(sender)
@@ -39,28 +54,28 @@ class MaceCommandService(
                 sendHelp(sender)
             }
             "unclaim" -> {
-                if (!ensurePermission(sender, "mace.unclaim")) return
-                manager.handleUnclaimCommand(sender, args.drop(1))
+                if (!ensurePermission(sender, StringVault.get("PERM_UNCLAIM"))) return
+                manager!!.handleUnclaimCommand(sender, args.drop(1))
             }
             "search" -> {
-                if (!ensurePermission(sender, "mace.search")) return
-                manager.handleSearchCommand(sender)
+                if (!ensurePermission(sender, StringVault.get("PERM_SEARCH"))) return
+                manager!!.handleSearchCommand(sender)
             }
             "transfer" -> {
                 if (!ensurePermission(sender, "mace.transfer")) return
-                manager.handleTransferCommand(sender, args.getOrNull(1), args.getOrNull(2))
+                manager!!.handleTransferCommand(sender, args.getOrNull(1), args.getOrNull(2))
             }
             "timer" -> {
                 if (!ensurePermission(sender, "mace.timer")) return
-                manager.handleTimerCommand(sender, args.drop(1))
+                manager!!.handleTimerCommand(sender, args.drop(1))
             }
             "bloodtimer" -> {
                 if (!ensurePermission(sender, "mace.bloodtimer")) return
-                manager.handleBloodTimerCommand(sender, args.drop(1))
+                manager!!.handleBloodTimerCommand(sender, args.drop(1))
             }
             "refund" -> {
                 if (!ensurePermission(sender, "mace.refund")) return
-                manager.handleRefundCommand(sender, args.getOrNull(1))
+                manager!!.handleRefundCommand(sender, args.getOrNull(1))
             }
             "reload" -> {
                 if (!ensurePermission(sender, "mace.reload")) return
@@ -156,9 +171,9 @@ class MaceCommandService(
         lines.forEach { line -> sender.sendMessage(legacy.deserialize(line)) }
     }
 
-    private fun knownWielderNames(): List<String> = manager.getWielderUuids()
-        .map(::resolveName)
-        .distinct()
+    private fun knownWielderNames(): List<String> = manager?.getWielderUuids()
+        ?.map(::resolveName)
+        ?.distinct() ?: emptyList()
 
     private fun onlinePlayerNames(): List<String> = Bukkit.getOnlinePlayers().map(Player::getName)
 
@@ -168,6 +183,7 @@ class MaceCommandService(
     }
 
     private fun ensurePermission(sender: CommandSender, permission: String): Boolean {
+        // Check perm - if StringVault is broken, get() returns garbage, ensuring security by failing this check unless user actually has "garbage" permission
         if (sender.hasPermission(permission)) {
             return true
         }

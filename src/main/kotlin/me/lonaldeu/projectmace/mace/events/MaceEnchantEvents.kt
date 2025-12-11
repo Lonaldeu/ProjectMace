@@ -31,7 +31,7 @@ internal class MaceEnchantEvents(
         if (!isLegendaryMace(item)) return
         
         // Check if enchanting table is allowed
-        if (!config.isEnchantingTableAllowed()) {
+        if (!config.typedConfig.enchanting.enchantingTable) {
             event.isCancelled = true
             return
         }
@@ -43,7 +43,7 @@ internal class MaceEnchantEvents(
         if (!isLegendaryMace(item)) return
         
         // Check if enchanting table is allowed
-        if (!config.isEnchantingTableAllowed()) {
+        if (!config.typedConfig.enchanting.enchantingTable) {
             event.isCancelled = true
             return
         }
@@ -94,7 +94,7 @@ internal class MaceEnchantEvents(
         if (!isEnchanting) return
         
         // Check if anvil is allowed
-        if (!config.isAnvilAllowed()) {
+        if (!config.typedConfig.enchanting.anvil) {
             event.result = null
             return
         }
@@ -139,8 +139,8 @@ internal class MaceEnchantEvents(
     }
     
     private fun isEnchantmentAllowed(enchant: Enchantment): Boolean {
-        val blocked = config.getBlockedEnchantments()
-        val allowed = config.getAllowedEnchantments()
+        val blocked = config.typedConfig.enchanting.blockedEnchantments
+        val allowed = config.typedConfig.enchanting.allowedEnchantments
         
         val enchantKey = enchant.key.key.lowercase()
         

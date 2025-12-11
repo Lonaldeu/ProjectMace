@@ -1,0 +1,32 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.1.0/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Calculating task graph as configuration cache cannot be reused because file 'build.gradle.kts' has changed.
+
+> Configure project :
+w: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/build.gradle.kts:71:1: 'fun <T : Task> Project.task(name: String, type: KClass<T>, configuration: T.() -> Unit): T' is deprecated. Use tasks.register instead.
+
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :clean
+> Task :processTestResources NO-SOURCE
+> Task :processResources
+
+> Task :compileKotlin
+w: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/LicenseValidator.kt:28:27 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///C:/Users/vladi/OneDrive/Documents/GitHub/ProjectMace/src/main/kotlin/me/lonaldeu/projectmace/license/LicenseValidator.kt:153:27 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+
+> Task :compileJava NO-SOURCE
+> Task :classes
+> Task :jar SKIPPED
+> Task :compileTestKotlin NO-SOURCE
+> Task :compileTestJava NO-SOURCE
+> Task :testClasses UP-TO-DATE
+> Task :test SKIPPED
+> Task :check UP-TO-DATE
+> Task :shadowJar
+> Task :assemble
+> Task :proguard
+> Task :build
+
+BUILD SUCCESSFUL in 19s
+5 actionable tasks: 5 executed
+Configuration cache entry stored.

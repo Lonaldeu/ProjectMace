@@ -49,8 +49,8 @@ class ConfigService(private val plugin: Plugin) {
             // Set defaults
             setDefaults()
             
-            // Populate typed config object
-            populateTypedConfig()
+            // Typed config is now populated explicitly after license validation
+            // populateTypedConfig()
             
             plugin.logger.info("Configuration loaded successfully")
             
@@ -64,6 +64,10 @@ class ConfigService(private val plugin: Plugin) {
      * Set default configuration values
      */
     private fun setDefaults() {
+        config.addDefault("license.key", "YOUR-LICENSE-KEY")
+        config.addDefault("license.product", "ProjectMace")
+        config.addDefault("license.api-url", "https://example.com")
+        
         config.addDefault("storage", "yaml")
         config.addDefault("debug", false)
         config.addDefault("max-legendary-maces", 3)
@@ -167,11 +171,21 @@ class ConfigService(private val plugin: Plugin) {
      * Populate the typed configuration object from YAML values.
      * This creates a clean, type-safe API for accessing config values.
      */
-    private fun populateTypedConfig() {
+    /**
+     * Populate the typed configuration object using secure keys where applicable.
+     * Must be called AFTER StringVault is initialized.
+     */
+    fun loadSecureConfig() {
         typedConfig = MaceConfig(
+            license = LicenseConfig(
+                key = config.getString("license.key", "YOUR-LICENSE-KEY") ?: "YOUR-LICENSE-KEY",
+                product = config.getString("license.product", "ProjectMace") ?: "ProjectMace",
+                apiUrl = config.getString("license.api-url", "https://example.com") ?: "https://example.com"
+            ),
             storage = config.getString("storage", "yaml") ?: "yaml",
             debug = config.getBoolean("debug", false),
-            maxLegendaryMaces = config.getInt("max-legendary-maces", 3),
+            // Encrypted Configuration Keys
+            maxLegendaryMaces = config.getInt(me.lonaldeu.projectmace.license.StringVault.get("CFG_MAX_MACES"), 3),
             autoSaveIntervalSeconds = config.getInt("auto-save-interval", 300),
             bloodthirstDurationHours = config.getInt("bloodthirst-duration-hours", 24),
             crafting = CraftingConfig(
@@ -204,8 +218,8 @@ class ConfigService(private val plugin: Plugin) {
                 sendMessages = config.getBoolean("features.combat.send-messages", true),
                 sendVoicelines = config.getBoolean("features.combat.send-voicelines", true),
                 scoring = CombatScoringConfig(
-                    baseDamage = config.getDouble("features.combat.scoring.base-damage", 5.0),
-                    damageMultiplier = config.getDouble("features.combat.scoring.damage-multiplier", 1.0),
+                    baseDamage = config.getDouble(me.lonaldeu.projectmace.license.StringVault.get("CFG_BASE_DAMAGE"), 5.0),
+                    damageMultiplier = config.getDouble(me.lonaldeu.projectmace.license.StringVault.get("CFG_DAMAGE_MULT"), 1.0),
                     healthMultiplier = config.getDouble("features.combat.scoring.health-multiplier", 0.5),
                     armorMultiplier = config.getDouble("features.combat.scoring.armor-multiplier", 2.0),
                     totemBonus = config.getDouble("features.combat.scoring.totem-bonus", 20.0),
@@ -293,7 +307,10 @@ class ConfigService(private val plugin: Plugin) {
     fun reloadConfig() {
         plugin.reloadConfig()
         config = plugin.config
-        populateTypedConfig()
+        // Re-populate if already initialized (runtime reload)
+        if (::typedConfig.isInitialized) {
+            loadSecureConfig()
+        }
         plugin.logger.info("Configuration reloaded")
     }
     
@@ -381,106 +398,21 @@ class ConfigService(private val plugin: Plugin) {
         }
     }
     
-    // Combat scoring getters
-    fun getCombatBaseDamage(): Double = config.getDouble("features.combat.scoring.base-damage", 5.0)
-    fun getCombatDamageMultiplier(): Double = config.getDouble("features.combat.scoring.damage-multiplier", 1.0)
-    fun getCombatHealthMultiplier(): Double = config.getDouble("features.combat.scoring.health-multiplier", 0.5)
-    fun getCombatArmorMultiplier(): Double = config.getDouble("features.combat.scoring.armor-multiplier", 2.0)
-    fun getCombatTotemBonus(): Double = config.getDouble("features.combat.scoring.totem-bonus", 20.0)
-    fun getWorthyKillThreshold(): Double = config.getDouble("features.combat.scoring.worthy-kill-threshold", 10.0)
-    fun getEasyKillThreshold(): Double = config.getDouble("features.combat.scoring.easy-kill-threshold", 5.0)
-    fun getCombatWorthyThreshold(): Double = getWorthyKillThreshold()
-    fun getCombatEasyThreshold(): Double = getEasyKillThreshold()
-    
-    // Timer thresholds
-    fun getWarningThreshold(): Int = config.getInt("timers.warning-threshold", 300)
-    fun getCriticalThreshold(): Int = config.getInt("timers.critical-threshold", 60)
-    fun getLastChanceThreshold(): Int = config.getInt("timers.last-chance-threshold", 60)
-    fun getIdleWhisperInterval(): Int = config.getInt("timers.idle-whisper-interval", 150)
-    fun getStatusCheckInterval(): Int = config.getInt("timers.status-check-interval", 10)
-    fun getPlaceholderWarningThresholdSeconds(): Double = getWarningThreshold().toDouble()
-    fun getPlaceholderCriticalThresholdSeconds(): Double = getCriticalThreshold().toDouble()
-    fun getLastChanceThresholdSeconds(): Double = getLastChanceThreshold().toDouble()
-    fun getIdleWhisperIntervalTicks(): Long = getIdleWhisperInterval().toLong() * 20L
-    fun getWarningThresholdPercentage(): Double = 0.05 // 5% of bloodthirst duration
-    
-    // Effects
-    fun areParticlesEnabled(): Boolean = config.getBoolean("effects.wielder.particles.enabled", true)
-    fun getParticleIntervalSeconds(): Int = config.getInt("effects.wielder.particles.interval-seconds", 1)
-    fun getParticleCount(): Int = config.getInt("effects.wielder.particles.count", 10)
-    fun getParticleIntervalTicks(): Long = getParticleIntervalSeconds().toLong() * 20L
-    fun areSoundsEnabled(): Boolean = config.getBoolean("effects.wielder.sounds.enabled", true)
-    fun isHeartbeatEnabled(): Boolean = config.getBoolean("effects.wielder.sounds.heartbeat-enabled", true)
-    fun getHeartbeatThreshold(): Int = config.getInt("effects.wielder.sounds.heartbeat-threshold", 60)
-    fun getSoundVolume(): Double = config.getDouble("effects.wielder.sounds.volume", 0.5)
-    fun getSoundPitchMin(): Double = config.getDouble("effects.wielder.sounds.pitch-min", 0.5)
-    fun getSoundPitchMax(): Double = config.getDouble("effects.wielder.sounds.pitch-max", 1.5)
-    fun getSoundHeartbeatThresholdSeconds(): Double = getHeartbeatThreshold().toDouble()
-    
-    // Loose mace
-    fun getLooseMaceDespawnDelay(): Int = config.getInt("loose-mace.despawn-delay-seconds", 600)
-    fun isVoidRecoveryEnabled(): Boolean = config.getBoolean("loose-mace.void-recovery-enabled", true)
-    fun isLooseMaceAnnouncementEnabled(): Boolean = config.getBoolean("loose-mace.announcement-enabled", true)
-    fun getLooseMaceDespawnDelayTicks(): Long = getLooseMaceDespawnDelay().toLong() * 20L
-    
-    // Hold time
-    fun getBaseDamageRequirement(): Double = config.getDouble("hold-time.base-damage-requirement", 10.0)
-    fun getEscalationRate(): Double = config.getDouble("hold-time.escalation-rate", 0.5)
-    fun isHoldTimeTrackingEnabled(): Boolean = config.getBoolean("hold-time.tracking-enabled", true)
-    fun getHoldTimeBaseDamageRequirement(): Double = getBaseDamageRequirement()
-    fun getHoldTimeEscalationRate(): Double = getEscalationRate()
-    
-    // Crafting
-    fun isCraftingEnabled(): Boolean = config.getBoolean("crafting.enabled", true)
-    fun getCraftingCooldownSeconds(): Double = config.getDouble("crafting.cooldown-seconds", 3.0)
-    fun getCraftingDurability(): Int = config.getInt("crafting.durability", 500)
-    fun getMaxMacesPerPlayer(): Int = config.getInt("crafting.max-per-player", 1)
-    
-    // Announcements
-    fun getAnnouncementCooldown(): Long = config.getLong("announcements.cooldown-milliseconds", 2000)
-    fun isMaceLostAnnouncementEnabled(): Boolean = config.getBoolean("announcements.mace-lost-enabled", true)
-    fun isBloodthirstUnmetAnnouncementEnabled(): Boolean = config.getBoolean("announcements.bloodthirst-unmet-enabled", true)
-    fun isDivineInterventionAnnouncementEnabled(): Boolean = config.getBoolean("announcements.divine-intervention-enabled", true)
-    fun getAnnouncementCooldownMillis(): Long = getAnnouncementCooldown()
-    
-    // Performance
-    fun getCombatLogMaxHistory(): Int = config.getInt("performance.combat-log-max-history", 1000)
-    fun getCombatLogPruningInterval(): Int = config.getInt("performance.combat-log-pruning-interval", 60)
-    fun isChunkForceLoadEnabled(): Boolean = config.getBoolean("performance.chunk-force-load", true)
-    fun getChunkUnloadDelay(): Int = config.getInt("performance.chunk-unload-delay", 5)
-    fun getChunkUnloadDelayTicks(): Long = getChunkUnloadDelay().toLong() * 20L
-    
-    // Logging
-    fun isVerboseLoggingEnabled(): Boolean = config.getBoolean("logging.verbose-events", false)
-    fun getLogDirectory(): String = config.getString("logging.log-directory", "mace_logs") ?: "mace_logs"
-    fun isLocationDataLogged(): Boolean = config.getBoolean("logging.include-location-data", true)
-    fun isTimerDataLogged(): Boolean = config.getBoolean("logging.include-timer-data", true)
-    
-    // Inventory guard
-    fun isDecoratedPotBlocked(): Boolean = config.getBoolean("features.inventory-guard.block-decorated-pots", true)
-    fun isItemFrameBlocked(): Boolean = config.getBoolean("features.inventory-guard.block-item-frames", true)
-    fun isArmorStandBlocked(): Boolean = config.getBoolean("features.inventory-guard.block-armor-stands", true)
-    fun isAllayBlocked(): Boolean = config.getBoolean("features.inventory-guard.block-allays", true)
-    fun isDropOnDeathBlocked(): Boolean = config.getBoolean("features.inventory-guard.block-drop-on-death", false)
-    fun isInventoryGuardBlockDecoratedPots(): Boolean = isDecoratedPotBlocked()
-    fun isInventoryGuardBlockItemFrames(): Boolean = isItemFrameBlocked()
-    fun isInventoryGuardBlockArmorStands(): Boolean = isArmorStandBlocked()
-    fun isInventoryGuardBlockAllays(): Boolean = isAllayBlocked()
-    
-    // Placeholder formatting
-    fun getPlaceholderEmptyValue(): String = config.getString("features.placeholders.format.empty-value", "None") ?: "None"
-    fun getPlaceholderBooleanTrue(): String = config.getString("features.placeholders.format.boolean-true", "true") ?: "true"
-    fun getPlaceholderBooleanFalse(): String = config.getString("features.placeholders.format.boolean-false", "false") ?: "false"
-    fun getPlaceholderListSeparator(): String = config.getString("features.placeholders.format.list-separator", ", ") ?: ", "
-    
-    // Enchanting
-    fun isAnvilAllowed(): Boolean = config.getBoolean("enchanting.anvil", true)
-    fun isEnchantingTableAllowed(): Boolean = config.getBoolean("enchanting.enchanting-table", true)
-    fun getAllowedEnchantments(): List<String> = config.getStringList("enchanting.allowed-enchantments").map { it.lowercase() }
-    fun getBlockedEnchantments(): List<String> = config.getStringList("enchanting.blocked-enchantments").map { it.lowercase() }
+    // Enchanting accessors
+    // Note: getEnchantMaxLevel still has logic using configuration section directly
     fun getEnchantMaxLevel(enchant: org.bukkit.enchantments.Enchantment): Int? {
         val maxLevels = config.getConfigurationSection("enchanting.max-levels") ?: return null
         val key = enchant.key.key.lowercase()
         return if (maxLevels.contains(key)) maxLevels.getInt(key) else null
     }
+
+
+
+    /**
+     * Helper to get license key from raw config before typed config is loaded.
+     */
+    fun getLicenseKey(): String {
+        return config.getString("license.key", "") ?: ""
+    }
+
 }
