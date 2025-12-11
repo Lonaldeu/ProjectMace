@@ -8,6 +8,12 @@ inventory:
   refuses-drop: "&cThe Legendary Mace refuses to leave your grasp."
   resists-stow: "&cThe Legendary Mace resists being stowed away."
 
+mace:
+  pickup: "&6You feel the Legendary Mace's hunger stirring within you."
+  drop-denied: "&cThe Legendary Mace refuses to be discarded."
+  broken: "&c&lYour Legendary Mace has shattered!"
+  broken-broadcast: "&4<player>'s &cLegendary Mace has been destroyed!"
+
 lifecycle:
   abandoned-personal: "&cThe Legendary Mace has abandoned you."
   breakup-format: "&5&o<line>"

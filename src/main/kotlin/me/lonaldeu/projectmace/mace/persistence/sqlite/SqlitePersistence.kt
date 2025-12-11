@@ -39,9 +39,14 @@ internal class SqlitePersistence(
         }
     }
     
+    @Synchronized
     private fun getConnection(): Connection {
         connection?.let { conn ->
-            if (!conn.isClosed) return conn
+            try {
+                if (!conn.isClosed) return conn
+            } catch (e: SQLException) {
+                logger.warning("[SQLite] Connection check failed, creating new connection")
+            }
         }
         
         val conn = DriverManager.getConnection("jdbc:sqlite:${dbFile.absolutePath}")
@@ -95,6 +100,7 @@ internal class SqlitePersistence(
         logger.info("[SQLite] Database tables initialized")
     }
     
+    @Synchronized
     override fun loadData(): List<UUID> {
         try {
             initializeTables()
@@ -198,26 +204,63 @@ internal class SqlitePersistence(
         }
     }
     
+    // Track which records need to be deleted (removed from in-memory state)
+    private val deletedWielders = mutableSetOf<UUID>()
+    private val deletedLooseMaces = mutableSetOf<UUID>()
+    
     override fun markDirty() {
         dataDirty = true
     }
     
+    /**
+     * Track a wielder removal for database cleanup
+     */
+    override fun trackWielderRemoval(playerUuid: UUID) {
+        deletedWielders.add(playerUuid)
+        markDirty()
+    }
+    
+    /**
+     * Track a loose mace removal for database cleanup
+     */
+    override fun trackLooseMaceRemoval(maceUuid: UUID) {
+        deletedLooseMaces.add(maceUuid)
+        markDirty()
+    }
+    
+    @Synchronized
     override fun flushIfDirty(force: Boolean) {
         if (!force && !dataDirty) return
         
         try {
             val conn = getConnection()
             
-            // Clear all tables and reinsert (simple approach)
-            conn.createStatement().use { stmt ->
-                stmt.executeUpdate("DELETE FROM mace_wielders")
-                stmt.executeUpdate("DELETE FROM loose_maces")
-                stmt.executeUpdate("DELETE FROM pending_mace_removal")
+            // Delete removed records first
+            if (deletedWielders.isNotEmpty()) {
+                conn.prepareStatement("DELETE FROM mace_wielders WHERE player_uuid = ?").use { stmt ->
+                    deletedWielders.forEach { uuid ->
+                        stmt.setString(1, uuid.toString())
+                        stmt.addBatch()
+                    }
+                    stmt.executeBatch()
+                }
+                deletedWielders.clear()
             }
             
-            // Insert wielders
+            if (deletedLooseMaces.isNotEmpty()) {
+                conn.prepareStatement("DELETE FROM loose_maces WHERE mace_uuid = ?").use { stmt ->
+                    deletedLooseMaces.forEach { uuid ->
+                        stmt.setString(1, uuid.toString())
+                        stmt.addBatch()
+                    }
+                    stmt.executeBatch()
+                }
+                deletedLooseMaces.clear()
+            }
+            
+            // UPSERT wielders using INSERT OR REPLACE
             conn.prepareStatement("""
-                INSERT INTO mace_wielders 
+                INSERT OR REPLACE INTO mace_wielders 
                 (player_uuid, mace_uuid, timer_end, last_chance, last_kill_uuid, total_hold_time_minutes, current_hold_session_start)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             """.trimIndent()).use { stmt ->
@@ -239,9 +282,9 @@ internal class SqlitePersistence(
                 stmt.executeBatch()
             }
             
-            // Insert loose maces
+            // UPSERT loose maces using INSERT OR REPLACE
             conn.prepareStatement("""
-                INSERT INTO loose_maces 
+                INSERT OR REPLACE INTO loose_maces 
                 (mace_uuid, world, x, y, z, timer_end, original_owner_uuid, last_chance)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """.trimIndent()).use { stmt ->
@@ -264,7 +307,10 @@ internal class SqlitePersistence(
                 stmt.executeBatch()
             }
             
-            // Insert pending removal
+            // Sync pending removal table (full replace since it's small)
+            conn.createStatement().use { stmt ->
+                stmt.executeUpdate("DELETE FROM pending_mace_removal")
+            }
             conn.prepareStatement("INSERT INTO pending_mace_removal (mace_uuid) VALUES (?)").use { stmt ->
                 pendingMaceRemoval.forEach { uuid ->
                     stmt.setString(1, uuid.toString())
@@ -275,6 +321,7 @@ internal class SqlitePersistence(
             
             conn.commit()
             dataDirty = false
+            logger.fine("[SQLite] Data flushed: ${maceWielders.size} wielders, ${looseMaces.size} loose maces")
             
         } catch (e: SQLException) {
             logger.severe("[SQLite] Failed to save data: ${e.message}")
@@ -282,10 +329,16 @@ internal class SqlitePersistence(
         }
     }
     
-    fun close() {
+    @Synchronized
+    override fun close() {
         try {
+            // Flush any pending changes before closing
+            if (dataDirty) {
+                flushIfDirty(true)
+            }
             connection?.close()
             connection = null
+            logger.info("[SQLite] Database connection closed")
         } catch (e: SQLException) {
             logger.warning("[SQLite] Error closing connection: ${e.message}")
         }

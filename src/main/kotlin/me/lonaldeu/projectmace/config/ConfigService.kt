@@ -19,6 +19,13 @@ class ConfigService(private val plugin: Plugin) {
     private val dataFolder: File = plugin.dataFolder
     
     /**
+     * Typed configuration object for clean API access.
+     * Populated from YAML on load/reload.
+     */
+    lateinit var typedConfig: MaceConfig
+        private set
+    
+    /**
      * Load or create default configuration
      */
     fun loadConfig() {
@@ -41,6 +48,9 @@ class ConfigService(private val plugin: Plugin) {
             
             // Set defaults
             setDefaults()
+            
+            // Populate typed config object
+            populateTypedConfig()
             
             plugin.logger.info("Configuration loaded successfully")
             
@@ -154,6 +164,118 @@ class ConfigService(private val plugin: Plugin) {
     }
     
     /**
+     * Populate the typed configuration object from YAML values.
+     * This creates a clean, type-safe API for accessing config values.
+     */
+    private fun populateTypedConfig() {
+        typedConfig = MaceConfig(
+            storage = config.getString("storage", "yaml") ?: "yaml",
+            debug = config.getBoolean("debug", false),
+            maxLegendaryMaces = config.getInt("max-legendary-maces", 3),
+            autoSaveIntervalSeconds = config.getInt("auto-save-interval", 300),
+            bloodthirstDurationHours = config.getInt("bloodthirst-duration-hours", 24),
+            crafting = CraftingConfig(
+                enabled = config.getBoolean("crafting.enabled", true),
+                cooldownSeconds = config.getDouble("crafting.cooldown-seconds", 3.0),
+                durability = config.getInt("crafting.durability", 500),
+                maxPerPlayer = config.getInt("crafting.max-per-player", 1)
+            ),
+            enchanting = EnchantingConfig(
+                anvil = config.getBoolean("enchanting.anvil", true),
+                enchantingTable = config.getBoolean("enchanting.enchanting-table", true),
+                allowedEnchantments = config.getStringList("enchanting.allowed-enchantments")
+                    .map { it.lowercase() }
+                    .ifEmpty { EnchantingConfig().allowedEnchantments },
+                blockedEnchantments = config.getStringList("enchanting.blocked-enchantments")
+                    .map { it.lowercase() }
+            ),
+            inventoryGuard = InventoryGuardConfig(
+                enabled = config.getBoolean("features.inventory-guard.enabled", true),
+                blockDecoratedPots = config.getBoolean("features.inventory-guard.block-decorated-pots", true),
+                blockItemFrames = config.getBoolean("features.inventory-guard.block-item-frames", true),
+                blockArmorStands = config.getBoolean("features.inventory-guard.block-armor-stands", true),
+                blockAllays = config.getBoolean("features.inventory-guard.block-allays", true),
+                blockDropOnDeath = config.getBoolean("features.inventory-guard.block-drop-on-death", false)
+            ),
+            combat = CombatConfig(
+                enabled = config.getBoolean("features.combat.enabled", true),
+                trackDamage = config.getBoolean("features.combat.track-damage", true),
+                awardWorthyKills = config.getBoolean("features.combat.award-worthy-kills", true),
+                sendMessages = config.getBoolean("features.combat.send-messages", true),
+                sendVoicelines = config.getBoolean("features.combat.send-voicelines", true),
+                scoring = CombatScoringConfig(
+                    baseDamage = config.getDouble("features.combat.scoring.base-damage", 5.0),
+                    damageMultiplier = config.getDouble("features.combat.scoring.damage-multiplier", 1.0),
+                    healthMultiplier = config.getDouble("features.combat.scoring.health-multiplier", 0.5),
+                    armorMultiplier = config.getDouble("features.combat.scoring.armor-multiplier", 2.0),
+                    totemBonus = config.getDouble("features.combat.scoring.totem-bonus", 20.0),
+                    worthyKillThreshold = config.getDouble("features.combat.scoring.worthy-kill-threshold", 10.0),
+                    easyKillThreshold = config.getDouble("features.combat.scoring.easy-kill-threshold", 5.0)
+                )
+            ),
+            effects = EffectsConfig(
+                particles = ParticleConfig(
+                    enabled = config.getBoolean("effects.wielder.particles.enabled", true),
+                    intervalSeconds = config.getInt("effects.wielder.particles.interval-seconds", 1),
+                    count = config.getInt("effects.wielder.particles.count", 10)
+                ),
+                sounds = SoundConfig(
+                    enabled = config.getBoolean("effects.wielder.sounds.enabled", true),
+                    heartbeatEnabled = config.getBoolean("effects.wielder.sounds.heartbeat-enabled", true),
+                    heartbeatThresholdSeconds = config.getInt("effects.wielder.sounds.heartbeat-threshold", 60),
+                    volume = config.getDouble("effects.wielder.sounds.volume", 0.5).toFloat(),
+                    pitchMin = config.getDouble("effects.wielder.sounds.pitch-min", 0.5).toFloat(),
+                    pitchMax = config.getDouble("effects.wielder.sounds.pitch-max", 1.5).toFloat()
+                )
+            ),
+            timers = TimersConfig(
+                warningThresholdSeconds = config.getInt("timers.warning-threshold", 300),
+                criticalThresholdSeconds = config.getInt("timers.critical-threshold", 60),
+                lastChanceThresholdSeconds = config.getInt("timers.last-chance-threshold", 60),
+                idleWhisperIntervalSeconds = config.getInt("timers.idle-whisper-interval", 150),
+                statusCheckIntervalSeconds = config.getInt("timers.status-check-interval", 10)
+            ),
+            looseMace = LooseMaceConfig(
+                despawnDelaySeconds = config.getInt("loose-mace.despawn-delay-seconds", 600),
+                voidRecoveryEnabled = config.getBoolean("loose-mace.void-recovery-enabled", true),
+                announcementEnabled = config.getBoolean("loose-mace.announcement-enabled", true)
+            ),
+            holdTime = HoldTimeConfig(
+                baseDamageRequirement = config.getDouble("hold-time.base-damage-requirement", 10.0),
+                escalationRate = config.getDouble("hold-time.escalation-rate", 0.5),
+                trackingEnabled = config.getBoolean("hold-time.tracking-enabled", true)
+            ),
+            announcements = AnnouncementsConfig(
+                cooldownMillis = config.getLong("announcements.cooldown-milliseconds", 2000),
+                maceLostEnabled = config.getBoolean("announcements.mace-lost-enabled", true),
+                bloodthirstUnmetEnabled = config.getBoolean("announcements.bloodthirst-unmet-enabled", true),
+                divineInterventionEnabled = config.getBoolean("announcements.divine-intervention-enabled", true)
+            ),
+            performance = PerformanceConfig(
+                combatLogMaxHistory = config.getInt("performance.combat-log-max-history", 1000),
+                combatLogPruningIntervalSeconds = config.getInt("performance.combat-log-pruning-interval", 60),
+                chunkForceLoadEnabled = config.getBoolean("performance.chunk-force-load", true),
+                chunkUnloadDelaySeconds = config.getInt("performance.chunk-unload-delay", 5)
+            ),
+            logging = LoggingConfig(
+                verboseEvents = config.getBoolean("logging.verbose-events", false),
+                logDirectory = config.getString("logging.log-directory", "mace_logs") ?: "mace_logs",
+                includeLocationData = config.getBoolean("logging.include-location-data", true),
+                includeTimerData = config.getBoolean("logging.include-timer-data", true)
+            ),
+            placeholders = PlaceholderConfig(
+                enabled = config.getBoolean("features.placeholders.enabled", true),
+                format = PlaceholderFormatConfig(
+                    emptyValue = config.getString("features.placeholders.format.empty-value", "None") ?: "None",
+                    booleanTrue = config.getString("features.placeholders.format.boolean-true", "true") ?: "true",
+                    booleanFalse = config.getString("features.placeholders.format.boolean-false", "false") ?: "false",
+                    listSeparator = config.getString("features.placeholders.format.list-separator", ", ") ?: ", "
+                )
+            )
+        )
+    }
+    
+    /**
      * Save current configuration to disk
      */
     fun saveConfig() {
@@ -171,6 +293,7 @@ class ConfigService(private val plugin: Plugin) {
     fun reloadConfig() {
         plugin.reloadConfig()
         config = plugin.config
+        populateTypedConfig()
         plugin.logger.info("Configuration reloaded")
     }
     

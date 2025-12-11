@@ -155,4 +155,11 @@ internal class LegendaryMacePersistence(
         }
         return looseForResume
     }
+    override fun trackWielderRemoval(playerUuid: UUID) {
+        // No-op for YAML: whole file is rewritten on save
+    }
+
+    override fun trackLooseMaceRemoval(maceUuid: UUID) {
+        // No-op for YAML: whole file is rewritten on save
+    }
 }

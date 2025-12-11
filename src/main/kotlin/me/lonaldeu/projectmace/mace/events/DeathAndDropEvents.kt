@@ -23,32 +23,44 @@ import org.bukkit.event.player.PlayerDropItemEvent
 import org.bukkit.inventory.ItemStack
 import java.util.UUID
 
+import me.lonaldeu.projectmace.mace.core.MaceContext
+
 internal class DeathAndDropEvents(
-    private val state: MaceState,
-    private val lifecycle: MaceLifecycle,
-    private val effects: MaceEffects,
-    private val items: MaceItems,
-    private val messaging: MaceMessaging,
-    private val despawnTasks: MaceDespawnTasks,
-    private val combatService: MaceCombatService,
-    private val saveData: () -> Unit,
-    private val logVerboseEvent: (
-        eventType: String,
-        playerName: String?,
-        playerUuid: UUID?,
-        maceUuid: UUID?,
-        location: org.bukkit.Location?,
-        containerContext: String?,
-        outcome: String?,
-        reason: String?,
-        additionalContext: Map<String, Any?>,
-        timerEnd: Double?,
-        timeLeft: Double?
-    ) -> Unit,
-    private val bloodthirstDurationSeconds: () -> Long,
-    private val blockDropOnDeath: Boolean,
-    private val nowSeconds: () -> Double = ::nowSeconds
+    private val context: MaceContext
 ) : Listener {
+
+    private val state get() = context.state
+    private val lifecycle get() = context.lifecycle
+    private val effects get() = context.effects
+    private val items get() = context.items
+    private val messaging get() = context.messaging
+    private val despawnTasks get() = context.despawnTasks
+    private val combatService get() = context.combat
+    private val messageService get() = context.registry.messages
+    private val saveData get() = context.saveData
+    
+    // Delegation for logger to match previous signature style or simplify usage
+    private fun logVerboseEvent(
+        eventType: String, 
+        playerName: String?, 
+        playerUuid: UUID?, 
+        maceUuid: UUID?, 
+        location: org.bukkit.Location?, 
+        containerContext: String?, 
+        outcome: String?, 
+        reason: String?, 
+        additionalContext: Map<String, Any?>, 
+        timerEnd: Double?, 
+        timeLeft: Double?
+    ) {
+        context.eventLogger.logVerboseEvent(
+            eventType, playerName, playerUuid, maceUuid, location, containerContext, outcome, reason, additionalContext, timerEnd, timeLeft
+        )
+    }
+
+    private fun bloodthirstDurationSeconds() = context.config.bloodthirstDurationSeconds
+    private val blockDropOnDeath get() = context.registry.config.isDropOnDeathBlocked()
+    private fun nowSeconds() = context.nowSeconds()
 
     @EventHandler(ignoreCancelled = true)
     fun onPlayerDeath(event: PlayerDeathEvent) {
@@ -176,7 +188,7 @@ internal class DeathAndDropEvents(
         effects.startWielderEffects(player)
         saveData()
 
-        messaging.sendLegacyMessage(player, "&6You feel the Legendary Mace's hunger stirring within you.")
+        player.sendMessage(messageService.getLegacy("mace.pickup"))
         logVerboseEvent(
             "PICKUP",
             player.name,
@@ -199,7 +211,7 @@ internal class DeathAndDropEvents(
 
         event.isCancelled = true
         player.updateInventory()
-        messaging.sendLegacyMessage(player, "&cThe Legendary Mace refuses to be discarded.")
+        player.sendMessage(messageService.getLegacy("mace.drop-denied"))
         logVerboseEvent(
             "DROP_CANCELLED",
             player.name,

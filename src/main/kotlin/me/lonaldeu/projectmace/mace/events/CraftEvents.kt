@@ -19,14 +19,27 @@ import kotlin.math.ceil
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 
+import me.lonaldeu.projectmace.mace.core.MaceContext
+
 internal class CraftEvents(
-    private val state: MaceState,
-    private val lifecycle: MaceLifecycle,
-    private val effects: MaceEffects,
-    private val items: MaceItems,
-    private val messaging: MaceMessaging,
-    private val saveData: () -> Unit,
-    private val logVerboseEvent: (
+    private val context: MaceContext
+) : Listener {
+
+    private val state get() = context.state
+    private val lifecycle get() = context.lifecycle
+    private val effects get() = context.effects
+    private val items get() = context.items
+    private val messaging get() = context.messaging
+    private val saveData get() = context.saveData
+    private fun nowSeconds() = context.nowSeconds()
+
+    private fun maxLegendaryMaces() = context.config.maxLegendaryMaces
+    private fun maxMacesPerPlayer() = context.config.crafting.maxPerPlayer
+    private fun isCraftingEnabled() = context.config.crafting.enabled
+    private fun craftCooldownSeconds() = context.config.crafting.cooldownSeconds
+    private fun bloodthirstDurationSeconds() = context.config.bloodthirstDurationHours * 3600L
+
+    private fun logVerboseEvent(
         eventType: String,
         playerName: String?,
         playerUuid: UUID?,
@@ -38,14 +51,11 @@ internal class CraftEvents(
         additionalContext: Map<String, Any?>,
         timerEnd: Double?,
         timeLeft: Double?
-    ) -> Unit,
-    private val maxLegendaryMaces: () -> Int,
-    private val maxMacesPerPlayer: () -> Int,
-    private val isCraftingEnabled: () -> Boolean,
-    private val craftCooldownSeconds: () -> Double,
-    private val bloodthirstDurationSeconds: () -> Long,
-    private val nowSeconds: () -> Double = ::nowSeconds
-) : Listener {
+    ) {
+        context.eventLogger.logVerboseEvent(
+            eventType, playerName, playerUuid, maceUuid, location, containerContext, outcome, reason, additionalContext, timerEnd, timeLeft
+        )
+    }
 
     private val craftCooldowns: MutableMap<UUID, Double> = state.craftCooldowns
 

@@ -15,15 +15,22 @@ import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.ItemDespawnEvent
 import java.util.UUID
 
+import me.lonaldeu.projectmace.mace.core.MaceContext
+
 internal class WorldItemEvents(
-    private val state: MaceState,
-    private val lifecycle: MaceLifecycle,
-    private val chunkControl: MaceChunkControl,
-    private val items: MaceItems,
-    private val messaging: MaceMessaging,
-    private val despawnTasks: MaceDespawnTasks,
-    private val saveData: () -> Unit,
-    private val logVerboseEvent: (
+    private val context: MaceContext
+) : Listener {
+
+    private val state get() = context.state
+    private val lifecycle get() = context.lifecycle
+    private val chunkControl get() = context.chunkControl
+    private val items get() = context.items
+    private val messaging get() = context.messaging
+    private val despawnTasks get() = context.despawnTasks
+    private val saveData get() = context.saveData
+    private fun nowSeconds() = context.nowSeconds()
+
+    private fun logVerboseEvent(
         eventType: String,
         playerName: String?,
         playerUuid: UUID?,
@@ -35,9 +42,11 @@ internal class WorldItemEvents(
         additionalContext: Map<String, Any?>,
         timerEnd: Double?,
         timeLeft: Double?
-    ) -> Unit,
-    private val nowSeconds: () -> Double = ::nowSeconds
-) : Listener {
+    ) {
+        context.eventLogger.logVerboseEvent(
+            eventType, playerName, playerUuid, maceUuid, location, containerContext, outcome, reason, additionalContext, timerEnd, timeLeft
+        )
+    }
 
     @EventHandler(ignoreCancelled = true)
     fun onEntityDamage(event: EntityDamageEvent) {

@@ -76,10 +76,11 @@ import org.bukkit.inventory.ItemStack
  * This service owns all game logic, persistence, and event handling.
  */
 class LegendaryMaceManager(
-    private val plugin: ProjectMacePlugin,
-    private val scheduler: PlatformScheduler,
-    private val messageService: me.lonaldeu.projectmace.config.MessageService
+    private val registry: me.lonaldeu.projectmace.mace.core.MaceServiceRegistry
 ) {
+    private val plugin = registry.plugin
+    private val scheduler = registry.scheduler
+    private val messageService = registry.messages
 
     private val miniMessage = MiniMessage.miniMessage()
     private val legacySerializer = LegacyComponentSerializer.legacyAmpersand()
@@ -205,6 +206,21 @@ class LegendaryMaceManager(
         combatVoicelines = plugin.voicelineService.getCombatLines(),
         settings = combatSettings
     )
+    
+    private val maceContext = me.lonaldeu.projectmace.mace.core.MaceContext(
+        registry = registry,
+        state = state,
+        items = items,
+        effects = effects,
+        messaging = messaging,
+        lifecycle = lifecycle,
+        combat = combatService,
+        chunkControl = chunkControl,
+        despawnTasks = despawnTasks,
+        eventLogger = eventLogger,
+        saveData = ::saveData,
+        nowSeconds = ::nowSeconds
+    )
 
     private val api: LegendaryMaceApi = LegendaryMaceManagerApiImpl(
         state = StateViewImpl(state, lifecycle, items, ::maxLegendaryMaces, ::nowSeconds),
@@ -275,59 +291,13 @@ class LegendaryMaceManager(
         nowSeconds = ::nowSeconds
     )
 
-    private val craftEvents = CraftEvents(
-        state = state,
-        lifecycle = lifecycle,
-        effects = effects,
-        items = items,
-        messaging = messaging,
-        saveData = ::saveData,
-        logVerboseEvent = ::logVerboseEvent,
-        maxLegendaryMaces = ::maxLegendaryMaces,
-        maxMacesPerPlayer = ::maxMacesPerPlayer,
-        isCraftingEnabled = ::isCraftingEnabled,
-        craftCooldownSeconds = ::craftCooldownSeconds,
-        bloodthirstDurationSeconds = ::bloodthirstDurationSeconds,
-        nowSeconds = ::nowSeconds
-    )
+    private val craftEvents = CraftEvents(maceContext)
 
-    private val playerLifecycleEvents = PlayerLifecycleEvents(
-        state = state,
-        lifecycle = lifecycle,
-        effects = effects,
-        items = items,
-        messaging = messaging,
-        saveData = ::saveData,
-        logVerboseEvent = ::logVerboseEvent,
-        nowSeconds = ::nowSeconds
-    )
+    private val playerLifecycleEvents = PlayerLifecycleEvents(maceContext)
 
-    private val deathAndDropEvents = DeathAndDropEvents(
-        state = state,
-        lifecycle = lifecycle,
-        effects = effects,
-        items = items,
-        messaging = messaging,
-        despawnTasks = despawnTasks,
-        combatService = combatService,
-        saveData = ::saveData,
-        logVerboseEvent = ::logVerboseEvent,
-        bloodthirstDurationSeconds = ::bloodthirstDurationSeconds,
-        blockDropOnDeath = plugin.configService.isDropOnDeathBlocked(),
-        nowSeconds = ::nowSeconds
-    )
+    private val deathAndDropEvents = DeathAndDropEvents(maceContext)
 
-    private val worldItemEvents = WorldItemEvents(
-        state = state,
-        lifecycle = lifecycle,
-        chunkControl = chunkControl,
-        items = items,
-        messaging = messaging,
-        despawnTasks = despawnTasks,
-        saveData = ::saveData,
-        logVerboseEvent = ::logVerboseEvent,
-        nowSeconds = ::nowSeconds
-    )
+    private val worldItemEvents = WorldItemEvents(maceContext)
 
     private val durabilityEvents = me.lonaldeu.projectmace.mace.events.MaceDurabilityEvents(
         items = items,
@@ -396,6 +366,9 @@ class LegendaryMaceManager(
 
         // Use synchronous flush during disable - async scheduling not allowed when plugin is disabling
         persistenceBridge.flushDataSync(true)
+        
+        // Close persistence connection and release resources
+        persistence.close()
     }
 
     private fun reloadConfig() {
@@ -427,8 +400,8 @@ class LegendaryMaceManager(
         }
         
         // Announce the breaking
-        messaging.sendLegacyMessage(player, "&c&lYour Legendary Mace has shattered!")
-        messaging.broadcast(legacySerializer.deserialize("&4${player.name}'s &cLegendary Mace has been destroyed!"))
+        player.sendMessage(messageService.getLegacy("mace.broken"))
+        messaging.broadcast(messageService.getLegacy("mace.broken-broadcast", "player" to player.name))
         
         // Log event
         logVerboseEvent(

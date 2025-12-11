@@ -59,7 +59,15 @@ class ProjectMacePlugin : JavaPlugin() {
                 logger.info("Config dump: ${configService.exportConfigDebug()}")
             }
 
-            maceManager = LegendaryMaceManager(this, scheduler, messageService)
+            val registry = me.lonaldeu.projectmace.mace.core.MaceServiceRegistry(
+                plugin = this,
+                scheduler = scheduler,
+                config = configService,
+                messages = messageService,
+                voicelines = voicelineService
+            )
+
+            maceManager = LegendaryMaceManager(registry)
             maceManager.enable()
 
         } catch (e: Exception) {

@@ -23,4 +23,24 @@ internal interface MacePersistence {
      * @param force Save even if not marked dirty
      */
     fun flushIfDirty(force: Boolean = false)
+    
+    /**
+     * Track a wielder removal for efficient database cleanup.
+     * Called when a wielder is removed from in-memory state.
+     */
+    fun trackWielderRemoval(playerUuid: UUID)
+    
+    /**
+     * Track a loose mace removal for efficient database cleanup.
+     * Called when a loose mace is removed from in-memory state.
+     */
+    fun trackLooseMaceRemoval(maceUuid: UUID)
+    
+    /**
+     * Close the persistence connection and release resources.
+     * Should flush any pending changes before closing.
+     */
+    fun close() {
+        // Default no-op for backends that don't need explicit cleanup
+    }
 }

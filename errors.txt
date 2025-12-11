@@ -1,0 +1,69 @@
+﻿To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.1.0/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Calculating task graph as no cached configuration is available for tasks: clean build
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :clean
+> Task :processTestResources NO-SOURCE
+> Task :processResources
+
+> Task :compileKotlin FAILED
+.\gradlew.bat : e: file:///
+C:/Users/vladi/OneDrive/Doc
+uments/GitHub/ProjectMace/s
+rc/main/kotlin/me/lonaldeu/
+projectmace/mace/persistenc
+e/sqlite/SqlitePersistence.
+kt:333:9 'close' hides 
+member of supertype 
+'MacePersistence' and 
+needs an 'override' 
+modifier.
+At line:1 char:1
++ .\gradlew.bat clean 
+build --no-daemon 
+--console=plain 2>&1 | 
+Out-File ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo         
+     : NotSpecified    : 
+(e: file:///C:/U.    
+..ride' modifier.:S    
+tring) [], RemoteEx    
+ception
+    + FullyQualifiedErr    
+orId : NativeComman    
+dError
+ 
+
+FAILURE: Build failed with 
+an exception.
+
+* What went wrong:
+Execution failed for task 
+':compileKotlin'.
+> A failure occurred while 
+executing org.jetbrains.kot
+lin.compilerRunner.GradleCo
+mpilerRunnerWithWorkers$Gra
+dleKotlinCompilerWorkAction
+   > Compilation error. 
+See log for more details
+
+* Try:
+> Run with --stacktrace 
+option to get the stack 
+trace.
+> Run with --info or 
+--debug option to get more 
+log output.
+> Run with --scan to 
+generate a Build Scan 
+(Powered by Develocity).
+> Get more help at 
+https://help.gradle.org.
+
+BUILD FAILED in 10s
+3 actionable tasks: 3 executed
+Configuration cache entry stored.
